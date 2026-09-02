@@ -15,6 +15,36 @@ interface PriceHistoryEntry {
 // In-memory runtime cache for tracking legitimate price movements across polling cycles
 const priceMovementCache: Record<string, PriceHistoryEntry> = {};
 
+interface LastKnownPriceEntry {
+  buyPrice: number | null;
+  sellPrice: number | null;
+}
+
+// In-memory runtime cache for retaining the last valid price per coin across polling cycles
+const lastKnownPricesCache: Record<string, LastKnownPriceEntry> = {};
+
+function getLastKnownPrice(id: string, altId?: string): LastKnownPriceEntry | undefined {
+  return lastKnownPricesCache[id] || (altId ? lastKnownPricesCache[altId] : undefined);
+}
+
+function updateLastKnownPrice(
+  id: string,
+  buyPrice: number | null,
+  sellPrice: number | null,
+  altId?: string
+): void {
+  const existing = getLastKnownPrice(id, altId);
+  const entry: LastKnownPriceEntry = {
+    buyPrice: buyPrice !== null && buyPrice > 0 ? buyPrice : (existing?.buyPrice ?? null),
+    sellPrice: sellPrice !== null && sellPrice > 0 ? sellPrice : (existing?.sellPrice ?? null),
+  };
+
+  lastKnownPricesCache[id] = entry;
+  if (altId) {
+    lastKnownPricesCache[altId] = entry;
+  }
+}
+
 /**
  * Calculates legitimate real-time price change between consecutive API polling responses
  */
@@ -98,6 +128,9 @@ function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): 
   // 1. Process standard products in catalog
   for (const def of PRODUCT_CATALOG) {
     const matchedApiItem = findMatchingApiItem(def, apiItems);
+    const stableKey = def.id;
+    const secondaryKey = matchedApiItem?.id || def.apiId;
+    const cached = getLastKnownPrice(stableKey, secondaryKey);
 
     if (matchedApiItem) {
       processedApiIds.add(matchedApiItem.id);
@@ -106,19 +139,37 @@ function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): 
       const isBuyActive = isOverallActive && matchedApiItem.is_buy_active !== false;
       const isSellActive = isOverallActive && matchedApiItem.is_sell_active !== false;
 
-      const buyPrice = isBuyActive ? parseApiPrice(matchedApiItem.sell_price) : null;
-      const sellPrice = isSellActive ? parseApiPrice(matchedApiItem.buy_price) : null;
-      const isPricePending = !isOverallActive || (buyPrice === null && sellPrice === null);
+      // Existing price mapping rule:
+      // website.buyPrice = API.sell_price
+      // website.sellPrice = API.buy_price
+      const incomingBuyPrice = isBuyActive ? parseApiPrice(matchedApiItem.sell_price) : null;
+      const incomingSellPrice = isSellActive ? parseApiPrice(matchedApiItem.buy_price) : null;
 
-      const movement = calculatePriceMovement(def.id, sellPrice, buyPrice);
+      // Retain last known valid price per side if incoming value is missing or unavailable
+      const effectiveBuyPrice =
+        incomingBuyPrice !== null && incomingBuyPrice > 0
+          ? incomingBuyPrice
+          : (cached?.buyPrice ?? null);
+
+      const effectiveSellPrice =
+        incomingSellPrice !== null && incomingSellPrice > 0
+          ? incomingSellPrice
+          : (cached?.sellPrice ?? null);
+
+      if (effectiveBuyPrice !== null || effectiveSellPrice !== null) {
+        updateLastKnownPrice(stableKey, effectiveBuyPrice, effectiveSellPrice, secondaryKey);
+      }
+
+      const isPricePending = effectiveBuyPrice === null && effectiveSellPrice === null;
+      const movement = calculatePriceMovement(def.id, effectiveSellPrice, effectiveBuyPrice);
 
       results.push({
         id: def.id,
         apiId: matchedApiItem.id,
         name: def.name,
         category: def.category,
-        buyPrice,
-        sellPrice,
+        buyPrice: effectiveBuyPrice,
+        sellPrice: effectiveSellPrice,
         unit: def.unit,
         changeAmount: movement.changeAmount,
         changePercentage: movement.changePercentage,
@@ -130,30 +181,45 @@ function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): 
         purity: def.purity,
         weight: def.weight,
         isPricePending,
-        isBuyActive,
-        isSellActive,
+        isBuyActive: effectiveBuyPrice !== null,
+        isSellActive: effectiveSellPrice !== null,
       });
     } else {
-      // Product in frontend but not in API response: KEEP in UI with waiting state
+      // Product in frontend but not in API response: check for retained last valid price
+      const effectiveBuyPrice = cached?.buyPrice ?? null;
+      const effectiveSellPrice = cached?.sellPrice ?? null;
+      const hasAnyPrice = effectiveBuyPrice !== null || effectiveSellPrice !== null;
+
+      const movement = hasAnyPrice
+        ? calculatePriceMovement(def.id, effectiveSellPrice, effectiveBuyPrice)
+        : {
+            changeAmount: 0,
+            changePercentage: 0,
+            direction: 'neutral' as TrendDirection,
+            highToday: null,
+            lowToday: null,
+          };
+
       results.push({
         id: def.id,
+        apiId: def.apiId,
         name: def.name,
         category: def.category,
-        buyPrice: null,
-        sellPrice: null,
+        buyPrice: effectiveBuyPrice,
+        sellPrice: effectiveSellPrice,
         unit: def.unit,
-        changeAmount: 0,
-        changePercentage: 0,
-        direction: 'neutral',
-        highToday: null,
-        lowToday: null,
+        changeAmount: movement.changeAmount,
+        changePercentage: movement.changePercentage,
+        direction: movement.direction,
+        highToday: movement.highToday,
+        lowToday: movement.lowToday,
         updatedAt: cycleTimeFormatted,
         isHot: def.isHot,
         purity: def.purity,
         weight: def.weight,
-        isPricePending: true, // در انتظار قیمت
-        isBuyActive: false,
-        isSellActive: false,
+        isPricePending: !hasAnyPrice,
+        isBuyActive: effectiveBuyPrice !== null,
+        isSellActive: effectiveSellPrice !== null,
       });
     }
   }
@@ -161,24 +227,41 @@ function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): 
   // 2. Process any newly discovered dynamic API items not covered by catalog
   for (const apiItem of apiItems) {
     if (!processedApiIds.has(apiItem.id)) {
+      const stableKey = apiItem.id;
+      const cached = getLastKnownPrice(stableKey);
+
       const isOverallActive = apiItem.is_active !== false;
       const isBuyActive = isOverallActive && apiItem.is_buy_active !== false;
       const isSellActive = isOverallActive && apiItem.is_sell_active !== false;
 
-      const buyPrice = isBuyActive ? parseApiPrice(apiItem.sell_price) : null;
-      const sellPrice = isSellActive ? parseApiPrice(apiItem.buy_price) : null;
-      const isPricePending = !isOverallActive || (buyPrice === null && sellPrice === null);
+      const incomingBuyPrice = isBuyActive ? parseApiPrice(apiItem.sell_price) : null;
+      const incomingSellPrice = isSellActive ? parseApiPrice(apiItem.buy_price) : null;
 
+      const effectiveBuyPrice =
+        incomingBuyPrice !== null && incomingBuyPrice > 0
+          ? incomingBuyPrice
+          : (cached?.buyPrice ?? null);
+
+      const effectiveSellPrice =
+        incomingSellPrice !== null && incomingSellPrice > 0
+          ? incomingSellPrice
+          : (cached?.sellPrice ?? null);
+
+      if (effectiveBuyPrice !== null || effectiveSellPrice !== null) {
+        updateLastKnownPrice(stableKey, effectiveBuyPrice, effectiveSellPrice);
+      }
+
+      const isPricePending = effectiveBuyPrice === null && effectiveSellPrice === null;
       const isGold = apiItem.title.includes('طلا') || apiItem.unit === 'gram';
-      const movement = calculatePriceMovement(apiItem.id, sellPrice, buyPrice);
+      const movement = calculatePriceMovement(apiItem.id, effectiveSellPrice, effectiveBuyPrice);
 
       results.push({
         id: apiItem.id,
         apiId: apiItem.id,
         name: apiItem.title,
         category: isGold ? 'gold' : 'coin',
-        buyPrice,
-        sellPrice,
+        buyPrice: effectiveBuyPrice,
+        sellPrice: effectiveSellPrice,
         unit: 'تومان',
         changeAmount: movement.changeAmount,
         changePercentage: movement.changePercentage,
@@ -187,8 +270,8 @@ function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): 
         lowToday: movement.lowToday,
         updatedAt: cycleTimeFormatted,
         isPricePending,
-        isBuyActive,
-        isSellActive,
+        isBuyActive: effectiveBuyPrice !== null,
+        isSellActive: effectiveSellPrice !== null,
       });
     }
   }
