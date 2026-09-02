@@ -1,0 +1,6 @@
+{
+  "name": "فرشته کوین - Fereshteh Coin",
+  "description": "پلتفرم تخصصی قیمت لحظه‌ای طلا، سکه و حباب بازار - فرشته کوین",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
