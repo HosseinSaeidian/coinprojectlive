@@ -6,7 +6,7 @@ import { ApiPriceItem } from '../types';
  */
 export const API_BASE_URL =
   (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
-  'http://22.60.14.155:8001';
+  'http://localhost';
 
 /**
  * Fetches raw price items from the /result endpoint
