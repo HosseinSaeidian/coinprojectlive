@@ -11,7 +11,7 @@ export const GoldPricesSection: React.FC<GoldPricesSectionProps> = ({ items }) =
   return (
     <section className="py-8 scroll-mt-24" id="gold-section">
       <SectionHeader
-        title="قیمت طلا و مظنه"
+        title="قیمت طلا"
         subtitle="نرخ لحظه‌ای طلای ۱۸ و ۲۴ عیار، مثقال مظنه بازار تهران، آبشده و اونس جهانی"
         badge="بروزرسانی زنده"
       />

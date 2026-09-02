@@ -11,7 +11,7 @@ export const CoinPricesSection: React.FC<CoinPricesSectionProps> = ({ items }) =
   return (
     <section className="py-8 scroll-mt-24" id="coin-section">
       <SectionHeader
-        title="قیمت سکه و مسکوکات"
+        title="قیمت سکه و مسکوکات بانکی"
         subtitle="نرخ خرید و فروش انواع سکه تمام امامی، بهار آزادی، نقد فردا، پس فردایی، نیم، ربع و سکه گرمی"
         badge="بانکی و استاندارد"
       />

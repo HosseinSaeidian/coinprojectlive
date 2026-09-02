@@ -35,21 +35,14 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
     >
       {/* Header */}
       <div>
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <div>
-            <div className="flex items-center gap-2">
-              <h4 className="text-base font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
-                {item.name}
-              </h4>
-              {isOverallPending && (
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
-                  مهم
-                </span>
-              )}
-            </div>
-            {item.purity && (
-              <span className="text-[11px] text-slate-400 block mt-0.5">
-                عیار: {item.purity}
+        <div className="flex items-center justify-between gap-2 mb-3">
+          <div className="flex items-center gap-2">
+            <h4 className="text-base font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
+              {item.name}
+            </h4>
+            {isOverallPending && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
+                مهم
               </span>
             )}
           </div>
