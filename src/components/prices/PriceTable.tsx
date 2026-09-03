@@ -16,6 +16,15 @@ interface PriceTableProps {
   coinItems: PriceItem[];
 }
 
+/**
+ * Removes all parenthetical details including parentheses from the symbol title for display in the table.
+ * e.g., "طلای 18 عیار (750/1000)" -> "طلای 18 عیار"
+ * e.g., "طلای دست دوم (750 مستعمل)" -> "طلای دست دوم"
+ */
+function cleanSymbolTitle(name: string): string {
+  return name.replace(/\s*[\(\（][^\)\）]*[\)\）]\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+}
+
 export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) => {
   const [activeTab, setActiveTab] = useState<'all' | 'gold' | 'coin'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
@@ -145,13 +154,8 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
                       <td className="py-4 px-6">
                         <div className="flex items-center gap-2.5">
                           <span className="font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
-                            {item.name}
+                            {cleanSymbolTitle(item.name)}
                           </span>
-                          {item.purity && (
-                            <span className="text-[11px] text-slate-400 hidden lg:inline">
-                              ({item.purity})
-                            </span>
-                          )}
                           {isPending && (
                             <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
                               مهم
@@ -258,16 +262,13 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
                 <div className="flex items-start justify-between">
                   <div>
                     <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-white text-sm">{item.name}</h4>
+                      <h4 className="font-bold text-white text-sm">{cleanSymbolTitle(item.name)}</h4>
                       {isPending && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
                           مهم
                         </span>
                       )}
                     </div>
-                    {item.purity && (
-                      <span className="text-[11px] text-slate-400">{item.purity}</span>
-                    )}
                   </div>
                   {isPending && item.changePercentage === 0 ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
