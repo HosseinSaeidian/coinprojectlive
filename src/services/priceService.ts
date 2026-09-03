@@ -346,13 +346,12 @@ export const priceService = {
   },
 
   /**
-   * Calculates coin bubbles using visible, effective prices.
+   * Pure calculation of coin bubbles from an existing list of PriceItems.
    * If coin or 18k gold is hidden, the bubble is excluded from public display.
    */
-  async getCoinBubbles(forceSync = false): Promise<CoinBubbleItem[]> {
-    const allPrices = await this.getAllPrices(forceSync);
+  calculateCoinBubbles(allPrices: PriceItem[], cycleTimeFormatted?: string): CoinBubbleItem[] {
     const now = new Date();
-    const cycleStartTimeFormatted = getCurrentCycleTimeFormatted(now);
+    const cycleStartTimeFormatted = cycleTimeFormatted || getCurrentCycleTimeFormatted(now);
 
     const gold18k = allPrices.find((p) => p.id === 'gold-18k');
     const gold18kSellPrice = gold18k && !gold18k.isPricePending ? gold18k.sellPrice : null;
@@ -410,6 +409,15 @@ export const priceService = {
     }
 
     return bubbles;
+  },
+
+  /**
+   * Calculates coin bubbles using visible, effective prices.
+   * If coin or 18k gold is hidden, the bubble is excluded from public display.
+   */
+  async getCoinBubbles(forceSync = false): Promise<CoinBubbleItem[]> {
+    const allPrices = await this.getAllPrices(forceSync);
+    return this.calculateCoinBubbles(allPrices);
   },
 
   /**

@@ -1,17 +1,9 @@
 import {
-  ApiPriceItem,
   BackendMarketState,
   ProductServerConfig,
   SyncResponse,
   StateResponse,
 } from '../types';
-
-/**
- * Centralized API Client for Gold, Silver, and Coin Prices API (Legacy direct upstream)
- */
-export const API_BASE_URL =
-  (typeof import.meta !== 'undefined' && import.meta.env?.VITE_API_BASE_URL) ||
-  'http://66.66.126.165:8001';
 
 /**
  * Centralized FastAPI Backend URL
@@ -235,44 +227,6 @@ export async function resetAdminProducts(): Promise<{ ok: boolean; state?: Backe
   } catch (error) {
     clearTimeout(timeoutId);
     console.warn(`[API Client] resetAdminProducts error at ${url}:`, error);
-    throw error;
-  }
-}
-
-/**
- * Fetches raw price items from direct upstream /result endpoint (fallback/legacy)
- */
-export async function fetchApiPrices(): Promise<ApiPriceItem[]> {
-  const cleanBase = API_BASE_URL.replace(/\/+$/, '');
-  const url = `${cleanBase}/result`;
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 7000);
-
-  try {
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        Accept: 'application/json',
-      },
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      throw new Error(`API responded with status ${response.status}: ${response.statusText}`);
-    }
-
-    const json = await response.json();
-    if (!Array.isArray(json)) {
-      throw new Error('Invalid API response format: expected an array of items');
-    }
-
-    return json as ApiPriceItem[];
-  } catch (error: unknown) {
-    clearTimeout(timeoutId);
-    console.warn(`[PriceAPI] Failed to fetch live prices from ${url}:`, error);
     throw error;
   }
 }

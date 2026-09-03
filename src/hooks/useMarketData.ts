@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { PriceItem, CoinBubbleItem, MarketStatusData, MarketSummaryMetric, HistoricalPricePoint } from '../types';
-import { priceService } from '../services/priceService';
+import { priceService, mapBackendStateToPriceItems } from '../services/priceService';
 import { marketService } from '../services/marketService';
 import { PRICE_UPDATE_EVENT } from '../services/adminService';
 import {
@@ -39,12 +39,22 @@ export function useMarketData() {
       }
       setError(null);
 
-      const [goldRes, coinRes, bubblesRes, statusRes, summaryRes] = await Promise.all([
-        priceService.getGoldPrices(isManualRefresh),
-        priceService.getCoinPrices(isManualRefresh),
-        priceService.getCoinBubbles(isManualRefresh),
+      // ALWAYS obtain a fresh consolidated state from POST /api/v1/market/sync
+      // (Deduplicated via activeSyncPromise in priceService)
+      const backendState = await priceService.syncWithBackend();
+
+      const now = new Date();
+      const cycleTimeFormatted = getCurrentCycleTimeFormatted(now);
+
+      // Derive all public views from the consolidated backend state
+      const allPrices = mapBackendStateToPriceItems(backendState, cycleTimeFormatted, false);
+      const goldRes = allPrices.filter((item) => item.category === 'gold' || item.category === 'global');
+      const coinRes = allPrices.filter((item) => item.category === 'coin');
+      const bubblesRes = priceService.calculateCoinBubbles(allPrices, cycleTimeFormatted);
+
+      const [statusRes, summaryRes] = await Promise.all([
         marketService.getMarketStatus(),
-        marketService.getMarketSummary(),
+        marketService.getMarketSummary(allPrices),
       ]);
 
       setGoldPrices(goldRes);
@@ -52,8 +62,8 @@ export function useMarketData() {
       setBubbles(bubblesRes);
       setMarketStatus(statusRes);
       setMarketSummary(summaryRes);
-      setLastRefreshTime(`امروز، ${getCurrentCycleTimeFormatted()}`);
-      setSecondsUntilNextRefresh(getRemainingCycleSeconds());
+      setLastRefreshTime(`امروز، ${cycleTimeFormatted}`);
+      setSecondsUntilNextRefresh(getRemainingCycleSeconds(now));
 
       // If currently selected chart symbol becomes hidden, automatically select the first visible fallback symbol
       const allVisible = [...goldRes, ...coinRes];

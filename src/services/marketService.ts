@@ -1,4 +1,4 @@
-import { MarketStatusData, MarketSummaryMetric } from '../types';
+import { MarketStatusData, MarketSummaryMetric, PriceItem } from '../types';
 import { priceService } from './priceService';
 import { getCurrentCycleTimeFormatted, getRemainingCycleSeconds } from '../utils/formatters';
 
@@ -25,8 +25,8 @@ export const marketService = {
   /**
    * Fetches the key metrics summary derived dynamically from live product prices
    */
-  async getMarketSummary(): Promise<MarketSummaryMetric[]> {
-    const allProducts = await priceService.getAllPrices();
+  async getMarketSummary(providedPrices?: PriceItem[]): Promise<MarketSummaryMetric[]> {
+    const allProducts = providedPrices || (await priceService.getAllPrices());
 
     const metricDefinitions: Array<{
       id: string;

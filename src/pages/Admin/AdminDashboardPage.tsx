@@ -133,40 +133,39 @@ export const AdminDashboardPage: React.FC = () => {
     if (dirtyCount === 0 || isSavingAll) return;
 
     setIsSavingAll(true);
-    const failedIds: string[] = [];
-    const succeededIds: string[] = [];
 
-    for (const [id, draft] of Object.entries(dirtyProducts)) {
-      try {
-        await adminService.saveProductConfig(id, draft);
-        succeededIds.push(id);
-      } catch (err) {
-        console.error(`Error saving product ${id}:`, err);
-        failedIds.push(id);
-      }
-    }
+    const items = Object.entries(dirtyProducts).map(([id, draft]) => ({
+      id,
+      ...(draft as Partial<ProductServerConfig>),
+    }));
 
-    // Clear dirty state for succeeded products only
-    setDirtyProducts((prev) => {
-      const copy = { ...prev };
-      succeededIds.forEach((id) => delete copy[id]);
-      return copy;
-    });
+    try {
+      // Execute ONE batch HTTP request to PATCH /api/v1/admin/products
+      await adminService.saveAllProducts(items);
 
-    await loadProducts();
-    setIsSavingAll(false);
-
-    if (failedIds.length === 0) {
+      // If batch save succeeds:
+      // - clear all saved dirty states
+      setDirtyProducts({});
+      // - reload/render products from returned backend state
+      await loadProducts();
+      // - show one success toast
       setJustSavedAll(true);
       setTimeout(() => setJustSavedAll(false), 3000);
-      showToast(`تغییرات تمامی ${toPersianDigits(succeededIds.length)} نماد با موفقیت ذخیره شد.`, 'success');
-    } else {
       showToast(
-        `تغییرات ${toPersianDigits(succeededIds.length)} نماد ذخیره شد، اما ${toPersianDigits(
-          failedIds.length
-        )} نماد با خطا مواجه شدند.`,
-        'error'
+        `تغییرات تمامی ${toPersianDigits(items.length)} نماد با موفقیت ذخیره شد.`,
+        'success'
       );
+    } catch (err: unknown) {
+      console.error('Error during batch save of all products:', err);
+      // If batch save fails:
+      // - NONE of the dirty rows should be considered saved
+      // - keep all dirty states in the UI intact
+      // - show one error toast
+      // - do not silently clear any drafts
+      const msg = err instanceof Error ? err.message : 'خطای سرور در ذخیره گروهی تنظیمات';
+      showToast(`ذخیره تغییرات انجام نشد: ${msg}`, 'error');
+    } finally {
+      setIsSavingAll(false);
     }
   };
 
