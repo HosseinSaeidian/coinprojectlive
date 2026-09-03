@@ -40,9 +40,9 @@ export function useMarketData() {
       setError(null);
 
       const [goldRes, coinRes, bubblesRes, statusRes, summaryRes] = await Promise.all([
-        priceService.getGoldPrices(),
-        priceService.getCoinPrices(),
-        priceService.getCoinBubbles(),
+        priceService.getGoldPrices(isManualRefresh),
+        priceService.getCoinPrices(isManualRefresh),
+        priceService.getCoinBubbles(isManualRefresh),
         marketService.getMarketStatus(),
         marketService.getMarketSummary(),
       ]);
@@ -54,6 +54,15 @@ export function useMarketData() {
       setMarketSummary(summaryRes);
       setLastRefreshTime(`امروز، ${getCurrentCycleTimeFormatted()}`);
       setSecondsUntilNextRefresh(getRemainingCycleSeconds());
+
+      // If currently selected chart symbol becomes hidden, automatically select the first visible fallback symbol
+      const allVisible = [...goldRes, ...coinRes];
+      if (allVisible.length > 0) {
+        setSelectedChartSymbol((prevSymbol) => {
+          const isStillVisible = allVisible.some((p) => p.id === prevSymbol);
+          return isStillVisible ? prevSymbol : allVisible[0].id;
+        });
+      }
     } catch (err: unknown) {
       console.error('Error fetching market data:', err);
       setError('دریافت اطلاعات با مشکل مواجه شد. لطفاً اتصال اینترنت خود را بررسی نموده و مجدداً تلاش فرمایید.');

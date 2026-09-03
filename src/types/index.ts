@@ -92,30 +92,98 @@ export interface ApiResponse<T> {
   timestamp: string;
 }
 
-export type PriceSource = 'api' | 'manual';
+export type PriceMode = 'api' | 'manual';
+export type PriceSource = PriceMode; // For backwards compatibility
 
-export interface AdminProductConfig {
+/**
+ * Server-persisted configuration for an individual product
+ */
+export interface ProductServerConfig {
   id: string;
-  isVisible: boolean; // false means حذف از سایت (removed from site)
-  isPricePending?: boolean; // true means در انتظار به‌روزرسانی
-  priceSource: PriceSource; // 'api' | 'manual'
-  manualOverride: boolean;
-  manualBuyPrice?: number;
-  manualSellPrice?: number;
+  isVisible: boolean;
+  priceMode: PriceMode;
+  buyAdjustment: number;
+  sellAdjustment: number;
+  manualBuyPrice: number | null;
+  manualSellPrice: number | null;
+  updatedAt?: string | null;
+}
+
+/**
+ * Raw market item persisted on the FastAPI backend
+ */
+export interface BackendRawMarketItem {
+  id: string;
+  title: string;
+  buy_price: number | string;
+  sell_price: number | string;
+  unit?: string;
+  is_active?: boolean;
+  is_buy_active?: boolean;
+  is_sell_active?: boolean;
+  lastSeenAt?: string;
+}
+
+/**
+ * Consolidated market state returned by the FastAPI backend
+ */
+export interface BackendMarketState {
+  version: number;
+  marketItems: BackendRawMarketItem[];
+  productConfigs: Record<string, ProductServerConfig>;
+  lastSyncAttemptAt: string | null;
+  lastSuccessfulSyncAt: string | null;
+}
+
+/**
+ * Response structure for POST /api/v1/market/sync
+ */
+export interface SyncResponse {
+  ok: boolean;
+  sync?: {
+    attempted: boolean;
+    succeeded: boolean;
+    skippedBecauseFresh: boolean;
+    error: string | null;
+    lastSyncAttemptAt: string | null;
+    lastSuccessfulSyncAt: string | null;
+  };
+  state: BackendMarketState;
+}
+
+/**
+ * Response structure for GET /api/v1/market/state
+ */
+export interface StateResponse {
+  ok?: boolean;
+  state: BackendMarketState;
+}
+
+/**
+ * Backwards compatibility alias for AdminProductConfig
+ */
+export interface AdminProductConfig extends ProductServerConfig {
+  // Optional legacy fields for backward compatibility
+  isPricePending?: boolean;
+  priceSource?: PriceSource;
+  manualOverride?: boolean;
   lastEditedAt?: string;
-  manualEditedTimestamp?: number; // epoch timestamp in ms of manual edit
+  manualEditedTimestamp?: number;
 }
 
 export interface ManagedProductItem extends PriceItem {
   isVisible: boolean;
-  isPricePending?: boolean;
-  priceSource: PriceSource;
-  manualOverride: boolean;
+  priceMode: PriceMode;
+  buyAdjustment: number;
+  sellAdjustment: number;
   apiBuyPrice: number | null;
   apiSellPrice: number | null;
-  manualBuyPrice: number;
-  manualSellPrice: number;
+  manualBuyPrice: number | null;
+  manualSellPrice: number | null;
   lastEditedAt?: string;
   manualEditedTimestamp?: number;
+  // Deprecated/compat properties
+  priceSource: PriceSource;
+  manualOverride: boolean;
 }
 

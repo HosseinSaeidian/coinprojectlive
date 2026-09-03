@@ -1,6 +1,5 @@
-import { MarketStatusData, MarketSummaryMetric, PriceItem } from '../types';
+import { MarketStatusData, MarketSummaryMetric } from '../types';
 import { priceService } from './priceService';
-import { adminService } from './adminService';
 import { getCurrentCycleTimeFormatted, getRemainingCycleSeconds } from '../utils/formatters';
 
 /**
@@ -28,7 +27,6 @@ export const marketService = {
    */
   async getMarketSummary(): Promise<MarketSummaryMetric[]> {
     const allProducts = await priceService.getAllPrices();
-    const configs = adminService.getStoredConfigs();
 
     const metricDefinitions: Array<{
       id: string;
@@ -67,14 +65,9 @@ export const marketService = {
       },
     ];
 
+    // Only include metrics where the product is visible in allProducts
     return metricDefinitions
-      .filter((metric) => {
-        const config = configs[metric.productId];
-        if (config && config.isVisible === false) {
-          return false;
-        }
-        return true;
-      })
+      .filter((metric) => allProducts.some((p) => p.id === metric.productId))
       .map((metric) => {
         const prod = allProducts.find((p) => p.id === metric.productId);
         const isPending = !prod || prod.isPricePending || prod.sellPrice === null;

@@ -1,8 +1,16 @@
-import { PriceItem, CoinBubbleItem, HistoricalPricePoint, ApiPriceItem, TrendDirection } from '../types';
-import { fetchApiPrices } from './apiClient';
-import { PRODUCT_CATALOG, findMatchingApiItem, parseApiPrice, CatalogProductDefinition } from './productCatalog';
-import { adminService } from './adminService';
-import { getCurrentCycleTimeFormatted, getCurrentCycleStartDate } from '../utils/formatters';
+import {
+  PriceItem,
+  CoinBubbleItem,
+  HistoricalPricePoint,
+  TrendDirection,
+  BackendMarketState,
+  BackendRawMarketItem,
+  ProductServerConfig,
+} from '../types';
+import { syncMarket, getMarketState } from './apiClient';
+import { PRODUCT_CATALOG, findMatchingApiItem, parseApiPrice } from './productCatalog';
+import { calculateEffectiveProductPrice } from '../utils/priceCalculations';
+import { getCurrentCycleTimeFormatted } from '../utils/formatters';
 
 interface PriceHistoryEntry {
   previousSell: number | null;
@@ -15,38 +23,13 @@ interface PriceHistoryEntry {
 // In-memory runtime cache for tracking legitimate price movements across polling cycles
 const priceMovementCache: Record<string, PriceHistoryEntry> = {};
 
-interface LastKnownPriceEntry {
-  buyPrice: number | null;
-  sellPrice: number | null;
-}
-
-// In-memory runtime cache for retaining the last valid price per coin across polling cycles
-const lastKnownPricesCache: Record<string, LastKnownPriceEntry> = {};
-
-function getLastKnownPrice(id: string, altId?: string): LastKnownPriceEntry | undefined {
-  return lastKnownPricesCache[id] || (altId ? lastKnownPricesCache[altId] : undefined);
-}
-
-function updateLastKnownPrice(
-  id: string,
-  buyPrice: number | null,
-  sellPrice: number | null,
-  altId?: string
-): void {
-  const existing = getLastKnownPrice(id, altId);
-  const entry: LastKnownPriceEntry = {
-    buyPrice: buyPrice !== null && buyPrice > 0 ? buyPrice : (existing?.buyPrice ?? null),
-    sellPrice: sellPrice !== null && sellPrice > 0 ? sellPrice : (existing?.sellPrice ?? null),
-  };
-
-  lastKnownPricesCache[id] = entry;
-  if (altId) {
-    lastKnownPricesCache[altId] = entry;
-  }
-}
+// In-memory cached state returned by FastAPI backend
+let currentBackendState: BackendMarketState | null = null;
+let activeSyncPromise: Promise<BackendMarketState> | null = null;
+let activeFetchStatePromise: Promise<BackendMarketState> | null = null;
 
 /**
- * Calculates legitimate real-time price change between consecutive API polling responses
+ * Calculates legitimate real-time price change between consecutive polling responses
  */
 function calculatePriceMovement(
   id: string,
@@ -100,7 +83,6 @@ function calculatePriceMovement(
   const newHigh = cached.highToday !== null ? Math.max(cached.highToday, effectivePrice) : effectivePrice;
   const newLow = cached.lowToday !== null ? Math.min(cached.lowToday, effectivePrice) : effectivePrice;
 
-  // Update cache
   priceMovementCache[id] = {
     previousSell: currentSell ?? cached.previousSell,
     previousBuy: currentBuy ?? cached.previousBuy,
@@ -119,149 +101,103 @@ function calculatePriceMovement(
 }
 
 /**
- * Transforms raw API response items and catalog definitions into unified PriceItem structures
+ * Maps BackendMarketState (persisted marketItems + productConfigs) into unified PriceItem structures.
+ *
+ * MAPPING RULE:
+ * website.buyPrice = upstream API sell_price (before adjustment)
+ * website.sellPrice = upstream API buy_price (before adjustment)
+ * DO NOT reverse this mapping!
  */
-function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): PriceItem[] {
+export function mapBackendStateToPriceItems(
+  state: BackendMarketState,
+  cycleTimeFormatted: string,
+  includeHidden = false
+): PriceItem[] {
   const processedApiIds = new Set<string>();
   const results: PriceItem[] = [];
+  const rawItems = state.marketItems || [];
+  const configs = state.productConfigs || {};
 
-  // 1. Process standard products in catalog
+  // 1. Process standard products in canonical PRODUCT_CATALOG
   for (const def of PRODUCT_CATALOG) {
-    const matchedApiItem = findMatchingApiItem(def, apiItems);
-    const stableKey = def.id;
-    const secondaryKey = matchedApiItem?.id || def.apiId;
-    const cached = getLastKnownPrice(stableKey, secondaryKey);
-
-    if (matchedApiItem) {
-      processedApiIds.add(matchedApiItem.id);
-
-      const isOverallActive = matchedApiItem.is_active !== false;
-      const isBuyActive = isOverallActive && matchedApiItem.is_buy_active !== false;
-      const isSellActive = isOverallActive && matchedApiItem.is_sell_active !== false;
-
-      // Existing price mapping rule:
-      // website.buyPrice = API.sell_price
-      // website.sellPrice = API.buy_price
-      const incomingBuyPrice = isBuyActive ? parseApiPrice(matchedApiItem.sell_price) : null;
-      const incomingSellPrice = isSellActive ? parseApiPrice(matchedApiItem.buy_price) : null;
-
-      // Retain last known valid price per side if incoming value is missing or unavailable
-      const effectiveBuyPrice =
-        incomingBuyPrice !== null && incomingBuyPrice > 0
-          ? incomingBuyPrice
-          : (cached?.buyPrice ?? null);
-
-      const effectiveSellPrice =
-        incomingSellPrice !== null && incomingSellPrice > 0
-          ? incomingSellPrice
-          : (cached?.sellPrice ?? null);
-
-      if (effectiveBuyPrice !== null || effectiveSellPrice !== null) {
-        updateLastKnownPrice(stableKey, effectiveBuyPrice, effectiveSellPrice, secondaryKey);
-      }
-
-      const isPricePending = effectiveBuyPrice === null && effectiveSellPrice === null;
-      const movement = calculatePriceMovement(def.id, effectiveSellPrice, effectiveBuyPrice);
-
-      results.push({
-        id: def.id,
-        apiId: matchedApiItem.id,
-        name: def.name,
-        category: def.category,
-        buyPrice: effectiveBuyPrice,
-        sellPrice: effectiveSellPrice,
-        unit: def.unit,
-        changeAmount: movement.changeAmount,
-        changePercentage: movement.changePercentage,
-        direction: movement.direction,
-        highToday: movement.highToday,
-        lowToday: movement.lowToday,
-        updatedAt: cycleTimeFormatted,
-        isHot: def.isHot,
-        purity: def.purity,
-        weight: def.weight,
-        isPricePending,
-        isBuyActive: effectiveBuyPrice !== null,
-        isSellActive: effectiveSellPrice !== null,
-      });
-    } else {
-      // Product in frontend but not in API response: check for retained last valid price
-      const effectiveBuyPrice = cached?.buyPrice ?? null;
-      const effectiveSellPrice = cached?.sellPrice ?? null;
-      const hasAnyPrice = effectiveBuyPrice !== null || effectiveSellPrice !== null;
-
-      const movement = hasAnyPrice
-        ? calculatePriceMovement(def.id, effectiveSellPrice, effectiveBuyPrice)
-        : {
-            changeAmount: 0,
-            changePercentage: 0,
-            direction: 'neutral' as TrendDirection,
-            highToday: null,
-            lowToday: null,
-          };
-
-      results.push({
-        id: def.id,
-        apiId: def.apiId,
-        name: def.name,
-        category: def.category,
-        buyPrice: effectiveBuyPrice,
-        sellPrice: effectiveSellPrice,
-        unit: def.unit,
-        changeAmount: movement.changeAmount,
-        changePercentage: movement.changePercentage,
-        direction: movement.direction,
-        highToday: movement.highToday,
-        lowToday: movement.lowToday,
-        updatedAt: cycleTimeFormatted,
-        isHot: def.isHot,
-        purity: def.purity,
-        weight: def.weight,
-        isPricePending: !hasAnyPrice,
-        isBuyActive: effectiveBuyPrice !== null,
-        isSellActive: effectiveSellPrice !== null,
-      });
+    const matched = findMatchingApiItem(def, rawItems as any);
+    if (matched) {
+      processedApiIds.add(matched.id);
     }
+
+    const isBuyActiveOnApi = matched ? matched.is_active !== false && matched.is_buy_active !== false : false;
+    const isSellActiveOnApi = matched ? matched.is_active !== false && matched.is_sell_active !== false : false;
+
+    // Upstream Mapping: website.buyPrice = upstream API sell_price; website.sellPrice = upstream API buy_price
+    const apiBuyPrice = isBuyActiveOnApi && matched ? parseApiPrice(matched.sell_price) : null;
+    const apiSellPrice = isSellActiveOnApi && matched ? parseApiPrice(matched.buy_price) : null;
+
+    const config: ProductServerConfig | undefined = configs[def.id];
+    const isVisible = config ? config.isVisible !== false : true;
+
+    // Filter hidden products from public site
+    if (!includeHidden && !isVisible) {
+      continue;
+    }
+
+    const { buyPrice, sellPrice, isBuyActive, isSellActive, isPricePending } =
+      calculateEffectiveProductPrice(apiBuyPrice, apiSellPrice, config);
+
+    const movement = calculatePriceMovement(def.id, sellPrice, buyPrice);
+
+    results.push({
+      id: def.id,
+      apiId: matched?.id || def.apiId,
+      name: def.name,
+      category: def.category,
+      buyPrice,
+      sellPrice,
+      unit: def.unit,
+      changeAmount: movement.changeAmount,
+      changePercentage: movement.changePercentage,
+      direction: movement.direction,
+      highToday: movement.highToday,
+      lowToday: movement.lowToday,
+      updatedAt: cycleTimeFormatted,
+      isHot: def.isHot,
+      purity: def.purity,
+      weight: def.weight,
+      isPricePending,
+      isBuyActive,
+      isSellActive,
+      isRemoved: !isVisible,
+    });
   }
 
   // 2. Process any newly discovered dynamic API items not covered by catalog
-  for (const apiItem of apiItems) {
+  for (const apiItem of rawItems) {
     if (!processedApiIds.has(apiItem.id)) {
-      const stableKey = apiItem.id;
-      const cached = getLastKnownPrice(stableKey);
+      const isBuyActiveOnApi = apiItem.is_active !== false && apiItem.is_buy_active !== false;
+      const isSellActiveOnApi = apiItem.is_active !== false && apiItem.is_sell_active !== false;
 
-      const isOverallActive = apiItem.is_active !== false;
-      const isBuyActive = isOverallActive && apiItem.is_buy_active !== false;
-      const isSellActive = isOverallActive && apiItem.is_sell_active !== false;
+      const apiBuyPrice = isBuyActiveOnApi ? parseApiPrice(apiItem.sell_price) : null;
+      const apiSellPrice = isSellActiveOnApi ? parseApiPrice(apiItem.buy_price) : null;
 
-      const incomingBuyPrice = isBuyActive ? parseApiPrice(apiItem.sell_price) : null;
-      const incomingSellPrice = isSellActive ? parseApiPrice(apiItem.buy_price) : null;
+      const config: ProductServerConfig | undefined = configs[apiItem.id];
+      const isVisible = config ? config.isVisible !== false : true;
 
-      const effectiveBuyPrice =
-        incomingBuyPrice !== null && incomingBuyPrice > 0
-          ? incomingBuyPrice
-          : (cached?.buyPrice ?? null);
-
-      const effectiveSellPrice =
-        incomingSellPrice !== null && incomingSellPrice > 0
-          ? incomingSellPrice
-          : (cached?.sellPrice ?? null);
-
-      if (effectiveBuyPrice !== null || effectiveSellPrice !== null) {
-        updateLastKnownPrice(stableKey, effectiveBuyPrice, effectiveSellPrice);
+      if (!includeHidden && !isVisible) {
+        continue;
       }
 
-      const isPricePending = effectiveBuyPrice === null && effectiveSellPrice === null;
+      const { buyPrice, sellPrice, isBuyActive, isSellActive, isPricePending } =
+        calculateEffectiveProductPrice(apiBuyPrice, apiSellPrice, config);
+
       const isGold = apiItem.title.includes('طلا') || apiItem.unit === 'gram';
-      const movement = calculatePriceMovement(apiItem.id, effectiveSellPrice, effectiveBuyPrice);
+      const movement = calculatePriceMovement(apiItem.id, sellPrice, buyPrice);
 
       results.push({
         id: apiItem.id,
         apiId: apiItem.id,
         name: apiItem.title,
         category: isGold ? 'gold' : 'coin',
-        buyPrice: effectiveBuyPrice,
-        sellPrice: effectiveSellPrice,
+        buyPrice,
+        sellPrice,
         unit: 'تومان',
         changeAmount: movement.changeAmount,
         changePercentage: movement.changePercentage,
@@ -270,8 +206,9 @@ function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): 
         lowToday: movement.lowToday,
         updatedAt: cycleTimeFormatted,
         isPricePending,
-        isBuyActive: effectiveBuyPrice !== null,
-        isSellActive: effectiveSellPrice !== null,
+        isBuyActive,
+        isSellActive,
+        isRemoved: !isVisible,
       });
     }
   }
@@ -279,134 +216,141 @@ function mapToPriceItems(apiItems: ApiPriceItem[], cycleTimeFormatted: string): 
   return results;
 }
 
-/**
- * Applies admin manual overrides, visibility filtering, and global 15-minute cycle timestamps
- */
-function applyStoredOverrides(items: PriceItem[]): PriceItem[] {
-  const configs = adminService.getStoredConfigs();
-  const now = new Date();
-  const cycleStartTimeFormatted = getCurrentCycleTimeFormatted(now);
-  const currentCycleStartMs = getCurrentCycleStartDate(now).getTime();
-
-  return items
-    .filter((item) => {
-      const config = configs[item.id];
-      // If marked as removed/not visible, hide completely (takes absolute priority)
-      if (config && config.isVisible === false) {
-        return false;
-      }
-      return true;
-    })
-    .map((item) => {
-      const config = configs[item.id];
-      let buyPrice = item.buyPrice;
-      let sellPrice = item.sellPrice;
-      let isPricePending = Boolean(item.isPricePending);
-      let isBuyActive = item.isBuyActive;
-      let isSellActive = item.isSellActive;
-      let effectiveUpdatedAt = item.updatedAt || cycleStartTimeFormatted;
-
-      if (config) {
-        if (config.isPricePending !== undefined) {
-          isPricePending = Boolean(config.isPricePending);
-        }
-
-        const manualOverride = config.manualOverride || config.priceSource === 'manual';
-        if (manualOverride && config.manualBuyPrice !== undefined && config.manualBuyPrice > 0) {
-          buyPrice = config.manualBuyPrice;
-          isBuyActive = true;
-          if (isPricePending && config.isPricePending === false) {
-            isPricePending = false;
-          }
-        }
-        if (manualOverride && config.manualSellPrice !== undefined && config.manualSellPrice > 0) {
-          sellPrice = config.manualSellPrice;
-          isSellActive = true;
-          if (isPricePending && config.isPricePending === false) {
-            isPricePending = false;
-          }
-        }
-        if (config.manualEditedTimestamp && manualOverride) {
-          if (config.manualEditedTimestamp >= currentCycleStartMs) {
-            effectiveUpdatedAt = config.lastEditedAt || cycleStartTimeFormatted;
-          }
-        }
-      }
-
-      return {
-        ...item,
-        buyPrice,
-        sellPrice,
-        isPricePending,
-        isBuyActive,
-        isSellActive,
-        isRemoved: false,
-        updatedAt: effectiveUpdatedAt,
-      };
-    });
-}
-
-/**
- * Service for fetching Gold, Silver & Coin prices directly from the /result API endpoint
- */
 export const priceService = {
   /**
-   * Fetches all live prices directly without filtering out removed items (specifically for Admin Panel management)
+   * Syncs with backend store (POST /api/v1/market/sync).
+   * Deduplicates concurrent calls.
+   * On failure, retains the last known state so the UI does not crash or replace valid prices with zeros.
    */
-  async getAllPricesForAdmin(): Promise<PriceItem[]> {
-    const now = new Date();
-    const cycleTimeFormatted = getCurrentCycleTimeFormatted(now);
-
-    try {
-      const apiItems = await fetchApiPrices();
-      return mapToPriceItems(apiItems, cycleTimeFormatted);
-    } catch (err) {
-      console.warn('[priceService] API fetch failed for admin, rendering catalog with waiting states:', err);
-      return mapToPriceItems([], cycleTimeFormatted);
+  async syncWithBackend(): Promise<BackendMarketState> {
+    if (activeSyncPromise) {
+      return activeSyncPromise;
     }
+
+    activeSyncPromise = (async () => {
+      try {
+        const response = await syncMarket();
+        if (response && response.state) {
+          currentBackendState = response.state;
+          return response.state;
+        }
+        throw new Error('Invalid backend state response');
+      } catch (err) {
+        console.warn('[priceService] Sync request failed:', err);
+        if (currentBackendState) {
+          return currentBackendState; // Retain last known state
+        }
+        // Fallback default state with empty market items
+        const fallbackState: BackendMarketState = {
+          version: 1,
+          marketItems: [],
+          productConfigs: {},
+          lastSyncAttemptAt: new Date().toISOString(),
+          lastSuccessfulSyncAt: null,
+        };
+        currentBackendState = fallbackState;
+        return fallbackState;
+      } finally {
+        activeSyncPromise = null;
+      }
+    })();
+
+    return activeSyncPromise;
   },
 
   /**
-   * Fetches all prices dynamically from the live API
+   * Fetches latest persisted state without upstream sync (GET /api/v1/market/state)
    */
-  async getAllPrices(): Promise<PriceItem[]> {
+  async fetchCurrentState(): Promise<BackendMarketState> {
+    if (activeFetchStatePromise) {
+      return activeFetchStatePromise;
+    }
+
+    activeFetchStatePromise = (async () => {
+      try {
+        const state = await getMarketState();
+        if (state) {
+          currentBackendState = state;
+          return state;
+        }
+        throw new Error('No state received from getMarketState');
+      } catch (err) {
+        console.warn('[priceService] getMarketState failed, falling back to syncWithBackend:', err);
+        return await this.syncWithBackend();
+      } finally {
+        activeFetchStatePromise = null;
+      }
+    })();
+
+    return activeFetchStatePromise;
+  },
+
+  /**
+   * Returns current in-memory cached state if available, otherwise initiates sync
+   */
+  async ensureState(forceSync = false): Promise<BackendMarketState> {
+    if (forceSync || !currentBackendState) {
+      return await this.syncWithBackend();
+    }
+    return currentBackendState;
+  },
+
+  /**
+   * Updates in-memory backend state directly (e.g. after admin PATCH)
+   */
+  setBackendState(state: BackendMarketState): void {
+    currentBackendState = state;
+  },
+
+  /**
+   * Returns current backend state synchronously
+   */
+  getCachedState(): BackendMarketState | null {
+    return currentBackendState;
+  },
+
+  /**
+   * Fetches all visible prices for the public site (filters out hidden items).
+   */
+  async getAllPrices(forceSync = false): Promise<PriceItem[]> {
+    const state = await this.ensureState(forceSync);
     const now = new Date();
     const cycleTimeFormatted = getCurrentCycleTimeFormatted(now);
+    return mapBackendStateToPriceItems(state, cycleTimeFormatted, false);
+  },
 
-    try {
-      const apiItems = await fetchApiPrices();
-      const mapped = mapToPriceItems(apiItems, cycleTimeFormatted);
-      return applyStoredOverrides(mapped);
-    } catch (err) {
-      console.warn('[priceService] API fetch failed, rendering catalog with waiting states:', err);
-      // Generate catalog items with pending/waiting state (NO fake mock prices)
-      const pendingItems = mapToPriceItems([], cycleTimeFormatted);
-      return applyStoredOverrides(pendingItems);
-    }
+  /**
+   * Fetches all prices for Admin management (includes hidden/removed items).
+   */
+  async getAllPricesForAdmin(forceSync = false): Promise<PriceItem[]> {
+    const state = await this.ensureState(forceSync);
+    const now = new Date();
+    const cycleTimeFormatted = getCurrentCycleTimeFormatted(now);
+    return mapBackendStateToPriceItems(state, cycleTimeFormatted, true);
   },
 
   /**
    * Fetches all visible gold prices
    */
-  async getGoldPrices(): Promise<PriceItem[]> {
-    const all = await this.getAllPrices();
+  async getGoldPrices(forceSync = false): Promise<PriceItem[]> {
+    const all = await this.getAllPrices(forceSync);
     return all.filter((item) => item.category === 'gold' || item.category === 'global');
   },
 
   /**
-   * Fetches all visible coin and precious metal prices
+   * Fetches all visible coin prices
    */
-  async getCoinPrices(): Promise<PriceItem[]> {
-    const all = await this.getAllPrices();
+  async getCoinPrices(forceSync = false): Promise<PriceItem[]> {
+    const all = await this.getAllPrices(forceSync);
     return all.filter((item) => item.category === 'coin');
   },
 
   /**
-   * Calculates coin bubbles using live prices
+   * Calculates coin bubbles using visible, effective prices.
+   * If coin or 18k gold is hidden, the bubble is excluded from public display.
    */
-  async getCoinBubbles(): Promise<CoinBubbleItem[]> {
-    const allPrices = await this.getAllPrices();
-    const configs = adminService.getStoredConfigs();
+  async getCoinBubbles(forceSync = false): Promise<CoinBubbleItem[]> {
+    const allPrices = await this.getAllPrices(forceSync);
     const now = new Date();
     const cycleStartTimeFormatted = getCurrentCycleTimeFormatted(now);
 
@@ -425,13 +369,14 @@ export const priceService = {
 
     for (const [bubbleId, meta] of Object.entries(coinWeightMap)) {
       const prod = allPrices.find((p) => p.id === meta.prodId);
-      const isVisible = !(configs[meta.prodId] && configs[meta.prodId].isVisible === false);
 
-      if (!isVisible) continue;
+      // If coin is hidden or not offered, its bubble is excluded
+      if (!prod) {
+        continue;
+      }
 
-      const coinSellPrice = prod && !prod.isPricePending ? prod.sellPrice : null;
+      const coinSellPrice = !prod.isPricePending ? prod.sellPrice : null;
 
-      // Only calculate if both coin and 18k gold sell prices are available from API
       if (gold18kSellPrice && coinSellPrice && gold18kSellPrice > 0 && coinSellPrice > 0) {
         // Intrinsic Gold Value = (18K Price / 750) * 900 * Weight
         const realValue = Math.round((gold18kSellPrice / 750) * 900 * meta.weight);
@@ -450,7 +395,6 @@ export const priceService = {
           isPricePending: false,
         });
       } else {
-        // Waiting state for bubble calculation
         bubbles.push({
           id: bubbleId,
           name: meta.name,
@@ -469,8 +413,7 @@ export const priceService = {
   },
 
   /**
-   * Fetches historical trend data for charts.
-   * Handles absence of time-series endpoint by returning current real-time data point.
+   * Fetches trend data for charts using final visible prices
    */
   async getHistoricalData(
     symbol: string,

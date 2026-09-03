@@ -1,245 +1,212 @@
-import { PriceItem, AdminProductConfig, ManagedProductItem, PriceSource } from '../types';
-import { PRODUCT_CATALOG } from './productCatalog';
 import {
-  getPersianTime,
-  getCurrentCycleTimeFormatted,
-  getCurrentCycleStartDate,
-  toEnglishDigits,
-} from '../utils/formatters';
+  BackendMarketState,
+  ManagedProductItem,
+  ProductServerConfig,
+} from '../types';
+import {
+  saveAdminProduct,
+  saveAdminProducts,
+  resetAdminProducts,
+} from './apiClient';
+import { priceService } from './priceService';
+import { PRODUCT_CATALOG, findMatchingApiItem, parseApiPrice } from './productCatalog';
+import { calculateEffectiveProductPrice } from '../utils/priceCalculations';
+import { getCurrentCycleTimeFormatted } from '../utils/formatters';
 
-/**
- * Admin Service for Fereshteh Coin
- * Provides demo authentication, local storage configuration persistence, and reactive updates.
- */
-
-const STORAGE_AUTH_KEY = 'fereshteh_admin_session_auth';
-const STORAGE_CONFIGS_KEY = 'fereshteh_products_config_v1';
-export const PRICE_UPDATE_EVENT = 'fereshteh_price_update';
-
-// Admin Credentials (Authentication layer)
-export const DEMO_ADMIN_CREDENTIALS = {
-  username: 'admin',
-  password: '123459',
-};
+export const ADMIN_AUTH_KEY = 'fereshteh_admin_auth';
+export const PRICE_UPDATE_EVENT = 'fereshteh_price_updated';
 
 export const adminService = {
   /**
-   * Checks if user is authenticated in the current browser session or storage
+   * Check if current user is authenticated as admin
    */
   isAuthenticated(): boolean {
     try {
-      const sessionAuth = sessionStorage.getItem(STORAGE_AUTH_KEY) === 'true';
-      const localAuth = localStorage.getItem(STORAGE_AUTH_KEY) === 'true';
-      return sessionAuth || localAuth;
+      return (
+        sessionStorage.getItem(ADMIN_AUTH_KEY) === 'true' ||
+        localStorage.getItem(ADMIN_AUTH_KEY) === 'true'
+      );
     } catch {
       return false;
     }
   },
 
   /**
-   * Demo login handler
+   * Admin login verification
    */
-  login(username: string, password: string): { success: boolean; message?: string } {
-    const cleanUser = toEnglishDigits(username.trim()).toLowerCase();
-    const cleanPass = toEnglishDigits(password.trim());
+  login(username: string, pass: string): { success: boolean; message?: string } {
+    // TEMPORARY DEVELOPMENT ADMIN LOGIN
+    // TODO: REMOVE AFTER BACKEND AUTHENTICATION IS CONNECTED
+    const isTemporaryDevLogin =
+      (username === 'admin' || username.trim() === 'admin') &&
+      pass === '123459';
 
-    const isUserValid = cleanUser === DEMO_ADMIN_CREDENTIALS.username.toLowerCase();
-    const isPassValid =
-      cleanPass === DEMO_ADMIN_CREDENTIALS.password ||
-      cleanPass === '123456' ||
-      cleanPass === 'admin' ||
-      cleanPass === 'admin123';
-
-    if (isUserValid && isPassValid) {
+    if (isTemporaryDevLogin) {
       try {
-        sessionStorage.setItem(STORAGE_AUTH_KEY, 'true');
-        localStorage.setItem(STORAGE_AUTH_KEY, 'true');
-        return { success: true };
-      } catch {
-        return { success: false, message: 'خطا در ذخیره‌سازی نشست مرورگر' };
+        sessionStorage.setItem(ADMIN_AUTH_KEY, 'true');
+        localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+      } catch (err) {
+        console.warn('Storage error during login:', err);
       }
+      return { success: true };
     }
 
-    return {
-      success: false,
-      message: 'نام کاربری یا رمز عبور اشتباه است.',
-    };
+    const validUser = 'admin';
+    const validPass = 'admin123';
+
+    if (username.trim() === validUser && pass === validPass) {
+      try {
+        sessionStorage.setItem(ADMIN_AUTH_KEY, 'true');
+        localStorage.setItem(ADMIN_AUTH_KEY, 'true');
+      } catch (err) {
+        console.warn('Storage error during login:', err);
+      }
+      return { success: true };
+    }
+    return { success: false, message: 'نام کاربری یا رمز عبور اشتباه است.' };
   },
 
   /**
-   * Logs out admin
+   * Admin logout
    */
   logout(): void {
     try {
-      sessionStorage.removeItem(STORAGE_AUTH_KEY);
-      localStorage.removeItem(STORAGE_AUTH_KEY);
+      sessionStorage.removeItem(ADMIN_AUTH_KEY);
+      localStorage.removeItem(ADMIN_AUTH_KEY);
     } catch (err) {
-      console.error('Logout error:', err);
+      console.warn('Storage error during logout:', err);
     }
   },
 
   /**
-   * Retrieves stored product override configurations
+   * Builds the comprehensive ManagedProductItem list for the Admin Panel
+   * from the consolidated BackendMarketState.
+   *
+   * Preserves:
+   * - website.buyPrice = upstream API sell_price
+   * - website.sellPrice = upstream API buy_price
+   * - isVisible=false products remain fully present in this list so Admin can manage/restore them
    */
-  getStoredConfigs(): Record<string, AdminProductConfig> {
-    try {
-      const raw = localStorage.getItem(STORAGE_CONFIGS_KEY);
-      if (!raw) return {};
-      return JSON.parse(raw) || {};
-    } catch {
-      return {};
-    }
-  },
+  getManagedProducts(state?: BackendMarketState | null): ManagedProductItem[] {
+    const currentState = state || priceService.getCachedState();
+    const rawItems = currentState?.marketItems || [];
+    const configs = currentState?.productConfigs || {};
 
-  /**
-   * Saves product override configurations
-   */
-  saveStoredConfigs(configs: Record<string, AdminProductConfig>): void {
-    try {
-      localStorage.setItem(STORAGE_CONFIGS_KEY, JSON.stringify(configs));
-      this.notifyPriceUpdate();
-    } catch (err) {
-      console.error('Failed to save product configs to localStorage:', err);
-    }
-  },
-
-  /**
-   * Returns all products in a unified managed structure (combining base catalog/API data with overrides).
-   * Ensures all products from the catalog are always included even if removed or missing from live API prices.
-   */
-  getManagedProducts(baseItems?: PriceItem[]): ManagedProductItem[] {
-    const storedConfigs = this.getStoredConfigs();
     const now = new Date();
     const cycleStartTimeFormatted = getCurrentCycleTimeFormatted(now);
-    const currentCycleStartMs = getCurrentCycleStartDate(now).getTime();
 
-    // Map base items by ID for quick lookup of live API data
-    const baseMap = new Map<string, PriceItem>();
-    if (baseItems && baseItems.length > 0) {
-      for (const item of baseItems) {
-        baseMap.set(item.id, item);
-      }
-    }
-
-    const processedIds = new Set<string>();
+    const processedApiIds = new Set<string>();
     const managedList: ManagedProductItem[] = [];
 
-    // 1. Process all products defined in standard PRODUCT_CATALOG
+    // 1. Process standard products in canonical catalog
     for (const p of PRODUCT_CATALOG) {
-      processedIds.add(p.id);
-      const live = baseMap.get(p.id);
-      const config = storedConfigs[p.id];
-      const isVisible = config ? config.isVisible : true;
-      const isPricePending = config
-        ? Boolean(config.isPricePending)
-        : live
-        ? Boolean(live.isPricePending)
-        : true;
-      const priceSource = config ? config.priceSource : 'manual';
-      const manualOverride = config
-        ? config.manualOverride
-        : config?.manualBuyPrice !== undefined || config?.manualSellPrice !== undefined;
-
-      const apiBuyPrice = live?.buyPrice ?? null;
-      const apiSellPrice = live?.sellPrice ?? null;
-      const manualBuyPrice = config?.manualBuyPrice ?? (apiBuyPrice ?? 0);
-      const manualSellPrice = config?.manualSellPrice ?? (apiSellPrice ?? 0);
-
-      const effectiveBuyPrice =
-        manualOverride || priceSource === 'manual'
-          ? (config?.manualBuyPrice ?? apiBuyPrice)
-          : apiBuyPrice;
-      const effectiveSellPrice =
-        manualOverride || priceSource === 'manual'
-          ? (config?.manualSellPrice ?? apiSellPrice)
-          : apiSellPrice;
-
-      let effectiveUpdatedAt = live?.updatedAt || cycleStartTimeFormatted;
-      if (config && config.manualEditedTimestamp && (manualOverride || priceSource === 'manual')) {
-        if (config.manualEditedTimestamp >= currentCycleStartMs) {
-          effectiveUpdatedAt = config.lastEditedAt || cycleStartTimeFormatted;
-        }
+      const matched = findMatchingApiItem(p, rawItems as any);
+      if (matched) {
+        processedApiIds.add(matched.id);
       }
+
+      const isBuyActiveOnApi = matched ? matched.is_active !== false && matched.is_buy_active !== false : false;
+      const isSellActiveOnApi = matched ? matched.is_active !== false && matched.is_sell_active !== false : false;
+
+      // Upstream Mapping: website.buyPrice = upstream API sell_price; website.sellPrice = upstream API buy_price
+      const apiBuyPrice = isBuyActiveOnApi && matched ? parseApiPrice(matched.sell_price) : null;
+      const apiSellPrice = isSellActiveOnApi && matched ? parseApiPrice(matched.buy_price) : null;
+
+      const config: ProductServerConfig | undefined = configs[p.id];
+      const isVisible = config ? config.isVisible !== false : true;
+      const priceMode = config?.priceMode || 'api';
+      const buyAdjustment = config?.buyAdjustment ?? 0;
+      const sellAdjustment = config?.sellAdjustment ?? 0;
+      const manualBuyPrice = config?.manualBuyPrice ?? null;
+      const manualSellPrice = config?.manualSellPrice ?? null;
+
+      const { buyPrice, sellPrice, isBuyActive, isSellActive, isPricePending } =
+        calculateEffectiveProductPrice(apiBuyPrice, apiSellPrice, config);
 
       managedList.push({
         id: p.id,
-        apiId: p.apiId,
+        apiId: matched?.id || p.apiId,
         name: p.name,
         category: p.category,
-        buyPrice: effectiveBuyPrice,
-        sellPrice: effectiveSellPrice,
+        buyPrice,
+        sellPrice,
+        unit: p.unit,
+        changeAmount: 0,
+        changePercentage: 0,
+        direction: 'neutral',
+        updatedAt: cycleStartTimeFormatted,
+        isHot: p.isHot,
+        purity: p.purity,
+        weight: p.weight,
+        isVisible,
+        isRemoved: !isVisible,
+        isPricePending,
+        isBuyActive,
+        isSellActive,
+        priceMode,
+        buyAdjustment,
+        sellAdjustment,
         apiBuyPrice,
         apiSellPrice,
         manualBuyPrice,
         manualSellPrice,
-        unit: p.unit,
-        changeAmount: live?.changeAmount ?? 0,
-        changePercentage: live?.changePercentage ?? 0,
-        direction: live?.direction ?? 'neutral',
-        updatedAt: effectiveUpdatedAt,
-        lastEditedAt: config?.lastEditedAt,
-        manualEditedTimestamp: config?.manualEditedTimestamp,
-        purity: p.purity,
-        weight: p.weight,
-        isHot: p.isHot,
-        isVisible,
-        isPricePending,
-        isRemoved: !isVisible,
-        priceSource,
-        manualOverride,
+        lastEditedAt: config?.updatedAt,
+        // Deprecated compat
+        priceSource: priceMode,
+        manualOverride: priceMode === 'manual',
       });
     }
 
-    // 2. Also include any extra dynamic items from baseItems (e.g. from live API) that weren't in PRODUCT_CATALOG
-    if (baseItems) {
-      for (const item of baseItems) {
-        if (!processedIds.has(item.id)) {
-          processedIds.add(item.id);
-          const config = storedConfigs[item.id];
-          const isVisible = config ? config.isVisible : true;
-          const isPricePending = config ? Boolean(config.isPricePending) : Boolean(item.isPricePending);
-          const priceSource = config ? config.priceSource : 'manual';
-          const manualOverride = config
-            ? config.manualOverride
-            : config?.manualBuyPrice !== undefined || config?.manualSellPrice !== undefined;
+    // 2. Process any newly discovered dynamic API items
+    for (const apiItem of rawItems) {
+      if (!processedApiIds.has(apiItem.id)) {
+        const isBuyActiveOnApi = apiItem.is_active !== false && apiItem.is_buy_active !== false;
+        const isSellActiveOnApi = apiItem.is_active !== false && apiItem.is_sell_active !== false;
 
-          const manualBuyPrice = config?.manualBuyPrice ?? (item.buyPrice ?? 0);
-          const manualSellPrice = config?.manualSellPrice ?? (item.sellPrice ?? 0);
+        const apiBuyPrice = isBuyActiveOnApi ? parseApiPrice(apiItem.sell_price) : null;
+        const apiSellPrice = isSellActiveOnApi ? parseApiPrice(apiItem.buy_price) : null;
 
-          const effectiveBuyPrice =
-            manualOverride || priceSource === 'manual'
-              ? (config?.manualBuyPrice ?? item.buyPrice)
-              : item.buyPrice;
-          const effectiveSellPrice =
-            manualOverride || priceSource === 'manual'
-              ? (config?.manualSellPrice ?? item.sellPrice)
-              : item.sellPrice;
+        const config: ProductServerConfig | undefined = configs[apiItem.id];
+        const isVisible = config ? config.isVisible !== false : true;
+        const priceMode = config?.priceMode || 'api';
+        const buyAdjustment = config?.buyAdjustment ?? 0;
+        const sellAdjustment = config?.sellAdjustment ?? 0;
+        const manualBuyPrice = config?.manualBuyPrice ?? null;
+        const manualSellPrice = config?.manualSellPrice ?? null;
 
-          let effectiveUpdatedAt = item.updatedAt || cycleStartTimeFormatted;
-          if (config && config.manualEditedTimestamp && (manualOverride || priceSource === 'manual')) {
-            if (config.manualEditedTimestamp >= currentCycleStartMs) {
-              effectiveUpdatedAt = config.lastEditedAt || cycleStartTimeFormatted;
-            }
-          }
+        const { buyPrice, sellPrice, isBuyActive, isSellActive, isPricePending } =
+          calculateEffectiveProductPrice(apiBuyPrice, apiSellPrice, config);
 
-          managedList.push({
-            ...item,
-            buyPrice: effectiveBuyPrice,
-            sellPrice: effectiveSellPrice,
-            apiBuyPrice: item.buyPrice,
-            apiSellPrice: item.sellPrice,
-            manualBuyPrice,
-            manualSellPrice,
-            isVisible,
-            isPricePending,
-            isRemoved: !isVisible,
-            priceSource,
-            manualOverride,
-            updatedAt: effectiveUpdatedAt,
-            lastEditedAt: config?.lastEditedAt,
-            manualEditedTimestamp: config?.manualEditedTimestamp,
-          });
-        }
+        const isGold = apiItem.title.includes('طلا') || apiItem.unit === 'gram';
+
+        managedList.push({
+          id: apiItem.id,
+          apiId: apiItem.id,
+          name: apiItem.title,
+          category: isGold ? 'gold' : 'coin',
+          buyPrice,
+          sellPrice,
+          unit: 'تومان',
+          changeAmount: 0,
+          changePercentage: 0,
+          direction: 'neutral',
+          updatedAt: cycleStartTimeFormatted,
+          isVisible,
+          isRemoved: !isVisible,
+          isPricePending,
+          isBuyActive,
+          isSellActive,
+          priceMode,
+          buyAdjustment,
+          sellAdjustment,
+          apiBuyPrice,
+          apiSellPrice,
+          manualBuyPrice,
+          manualSellPrice,
+          lastEditedAt: config?.updatedAt,
+          priceSource: priceMode,
+          manualOverride: priceMode === 'manual',
+        });
       }
     }
 
@@ -247,82 +214,74 @@ export const adminService = {
   },
 
   /**
-   * Updates a single product configuration
+   * Saves one product row configuration to the FastAPI backend (PATCH /api/v1/admin/products/{productId})
    */
-  updateProductConfig(id: string, updates: Partial<AdminProductConfig>): void {
-    const configs = this.getStoredConfigs();
-    const current = configs[id] || {
-      id,
-      isVisible: true,
-      isPricePending: false,
-      priceSource: 'manual',
-      manualOverride: true,
-    };
+  async saveProduct(productId: string, updates: Partial<ProductServerConfig>): Promise<ProductServerConfig> {
+    const saved = await saveAdminProduct(productId, updates);
 
-    const now = new Date();
-    const isManualPriceEdit =
-      updates.manualBuyPrice !== undefined ||
-      updates.manualSellPrice !== undefined ||
-      updates.priceSource === 'manual' ||
-      updates.manualOverride === true;
-
-    configs[id] = {
-      ...current,
-      ...updates,
-      id,
-      lastEditedAt: getPersianTime(now),
-      manualEditedTimestamp: isManualPriceEdit ? now.getTime() : current.manualEditedTimestamp,
-    };
-
-    this.saveStoredConfigs(configs);
-  },
-
-  /**
-   * Updates multiple product configurations at once
-   */
-  updateMultipleConfigs(items: { id: string; config: Partial<AdminProductConfig> }[]): void {
-    const configs = this.getStoredConfigs();
-    const now = new Date();
-    const formattedNow = getPersianTime(now);
-    const nowTimestamp = now.getTime();
-
-    items.forEach(({ id, config }) => {
-      const current = configs[id] || {
-        id,
-        isVisible: true,
-        isPricePending: false,
-        priceSource: 'manual',
-        manualOverride: true,
+    // Update in-memory state
+    const current = priceService.getCachedState();
+    if (current) {
+      if (!current.productConfigs) {
+        current.productConfigs = {};
+      }
+      current.productConfigs[productId] = {
+        ...current.productConfigs[productId],
+        ...saved,
       };
-
-      const isManualPriceEdit =
-        config.manualBuyPrice !== undefined ||
-        config.manualSellPrice !== undefined ||
-        config.priceSource === 'manual' ||
-        config.manualOverride === true;
-
-      configs[id] = {
-        ...current,
-        ...config,
-        id,
-        lastEditedAt: formattedNow,
-        manualEditedTimestamp: isManualPriceEdit ? nowTimestamp : current.manualEditedTimestamp,
-      };
-    });
-
-    this.saveStoredConfigs(configs);
-  },
-
-  /**
-   * Resets all prices and visibilities back to default market values
-   */
-  resetAllToDefault(): void {
-    try {
-      localStorage.removeItem(STORAGE_CONFIGS_KEY);
-      this.notifyPriceUpdate();
-    } catch (err) {
-      console.error('Reset error:', err);
+      priceService.setBackendState(current);
     }
+
+    this.notifyPriceUpdate();
+    return saved;
+  },
+
+  /**
+   * Saves all dirty product rows to the FastAPI backend (PATCH /api/v1/admin/products)
+   */
+  async saveAllProducts(
+    items: Array<{ id: string } & Partial<ProductServerConfig>>
+  ): Promise<void> {
+    const res = await saveAdminProducts(items);
+
+    if (res.state) {
+      priceService.setBackendState(res.state);
+    } else {
+      // Re-fetch state
+      await priceService.fetchCurrentState();
+    }
+
+    this.notifyPriceUpdate();
+  },
+
+  /**
+   * Resets all product configurations on the backend (POST /api/v1/admin/products/reset)
+   * Resets adjustments to 0, mode to 'api', isVisible to true, without deleting API marketItems.
+   */
+  async resetAllProducts(): Promise<void> {
+    const res = await resetAdminProducts();
+
+    if (res.state) {
+      priceService.setBackendState(res.state);
+    } else {
+      await priceService.fetchCurrentState();
+    }
+
+    this.notifyPriceUpdate();
+  },
+
+  /**
+   * Backward-compatibility alias for saveProduct
+   */
+  async saveProductConfig(productId: string, updates: Partial<ProductServerConfig>): Promise<ProductServerConfig> {
+    return this.saveProduct(productId, updates);
+  },
+
+  /**
+   * Backward-compatibility alias for resetAllProducts
+   */
+  async resetAllToDefault(): Promise<void> {
+    return this.resetAllProducts();
   },
 
   /**
