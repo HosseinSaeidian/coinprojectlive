@@ -97,6 +97,7 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
 
   const isManual = priceSource === 'manual';
   const isRemoved = !isVisible;
+  const isPriceDisabled = isPricePending || isRemoved || !isManual;
 
   return (
     <div
@@ -156,7 +157,7 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
           title={isRemoved ? 'کلیک جهت بازگردانی به سایت' : 'کلیک جهت حذف از سایت'}
         >
           {isRemoved ? <RotateCcw size={13} className="text-rose-400" /> : <Eye size={13} />}
-          <span>{isRemoved ? 'بازگردانی به سایت' : 'حذف از سایت'}</span>
+          <span>{isRemoved ? 'بازگردانی به سایت' : 'حذف'}</span>
         </button>
       </div>
 
@@ -221,10 +222,10 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
           <input
             type="number"
             value={sellPriceInput}
-            disabled={!isManual || isRemoved}
+            disabled={isPriceDisabled}
             onChange={(e) => handleSellPriceChange(e.target.value)}
             className={`w-full bg-[#000814] border rounded-xl px-3 py-2 text-sm font-mono text-left text-white outline-none transition-all ${
-              isManual && !isRemoved
+              !isPriceDisabled
                 ? 'border-[#003566] focus:border-[#FFD60A]'
                 : 'border-[#003566]/40 opacity-50 cursor-not-allowed'
             }`}
@@ -247,10 +248,10 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
           <input
             type="number"
             value={buyPriceInput}
-            disabled={!isManual || isRemoved}
+            disabled={isPriceDisabled}
             onChange={(e) => handleBuyPriceChange(e.target.value)}
             className={`w-full bg-[#000814] border rounded-xl px-3 py-2 text-sm font-mono text-left text-white outline-none transition-all ${
-              isManual && !isRemoved
+              !isPriceDisabled
                 ? 'border-[#003566] focus:border-[#FFC300]'
                 : 'border-[#003566]/40 opacity-50 cursor-not-allowed'
             }`}

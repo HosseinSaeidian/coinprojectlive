@@ -334,7 +334,6 @@ export const AdminDashboardPage: React.FC = () => {
                   <th className="py-4 px-5">عنوان و مشخصات نماد</th>
                   <th className="py-4 px-4 text-center">حذف از سایت</th>
                   <th className="py-4 px-4 text-center">وضعیت نرخ</th>
-                  <th className="py-4 px-4 text-center">حالت نرخ‌گذاری</th>
                   <th className="py-4 px-4">قیمت خرید</th>
                   <th className="py-4 px-4">قیمت فروش</th>
                   <th className="py-4 px-5 text-center">عملیات</th>
@@ -343,7 +342,7 @@ export const AdminDashboardPage: React.FC = () => {
               <tbody className="divide-y divide-[#003566]/40 text-sm">
                 {filteredProducts.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="text-center py-12 text-slate-400 text-sm">
+                    <td colSpan={6} className="text-center py-12 text-slate-400 text-sm">
                       هیچ نمادی با فیلتر انتخابی یافت نشد.
                     </td>
                   </tr>

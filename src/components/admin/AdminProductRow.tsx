@@ -53,16 +53,12 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
 
   const handleBuyPriceChange = (val: string) => {
     setBuyPriceInput(val);
-    if (isPricePending) {
-      setIsPricePending(false);
-    }
+    setPriceSource('manual');
   };
 
   const handleSellPriceChange = (val: string) => {
     setSellPriceInput(val);
-    if (isPricePending) {
-      setIsPricePending(false);
-    }
+    setPriceSource('manual');
   };
 
   const handleSave = () => {
@@ -103,6 +99,7 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
 
   const isManual = priceSource === 'manual';
   const isRemoved = !isVisible;
+  const isPriceDisabled = isPricePending || isRemoved;
 
   return (
     <tr
@@ -111,8 +108,6 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
           ? 'bg-rose-950/20 opacity-75 hover:opacity-100'
           : isPricePending
           ? 'bg-amber-950/20 hover:bg-amber-900/30'
-          : isManual
-          ? 'bg-[#001D3D]/40 hover:bg-[#12366F]/20'
           : 'hover:bg-[#12366F]/10'
       }`}
     >
@@ -167,7 +162,7 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
           title={isRemoved ? 'نماد در وب‌سایت پنهان است (کلیک جهت بازگردانی به وب‌سایت)' : 'کلیک جهت حذف از وب‌سایت'}
         >
           {isRemoved ? <RotateCcw size={14} className="text-rose-400" /> : <Eye size={14} />}
-          <span>{isRemoved ? 'بازگردانی به سایت' : 'حذف از سایت'}</span>
+          <span>{isRemoved ? 'بازگردانی به سایت' : 'حذف'}</span>
         </button>
       </td>
 
@@ -197,34 +192,6 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
         </button>
       </td>
 
-      {/* Price Source Mode */}
-      <td className="py-4 px-4 text-center">
-        <div className="inline-flex bg-[#000814] p-1 rounded-xl border border-[#003566]">
-          <button
-            type="button"
-            onClick={() => setPriceSource('manual')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              isManual
-                ? 'bg-[#12366F] text-[#FFD60A] shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            دستی
-          </button>
-          <button
-            type="button"
-            onClick={() => setPriceSource('api')}
-            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-              !isManual
-                ? 'bg-emerald-600/30 text-emerald-300 shadow-sm'
-                : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            خودکار (API)
-          </button>
-        </div>
-      </td>
-
       {/* Buy Price Input */}
       <td className="py-4 px-4">
         <div className="space-y-1">
@@ -232,10 +199,10 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
             <input
               type="number"
               value={buyPriceInput}
-              disabled={!isManual || isRemoved}
+              disabled={isPriceDisabled}
               onChange={(e) => handleBuyPriceChange(e.target.value)}
               className={`w-36 sm:w-40 bg-[#000814] border rounded-xl px-3 py-1.5 text-xs sm:text-sm font-mono text-left text-white outline-none transition-all ${
-                isManual && !isRemoved
+                !isPriceDisabled
                   ? 'border-[#003566] focus:border-[#FFC300]'
                   : 'border-[#003566]/40 opacity-50 bg-[#000814]/40 cursor-not-allowed'
               }`}
@@ -259,10 +226,10 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
             <input
               type="number"
               value={sellPriceInput}
-              disabled={!isManual || isRemoved}
+              disabled={isPriceDisabled}
               onChange={(e) => handleSellPriceChange(e.target.value)}
               className={`w-36 sm:w-40 bg-[#000814] border rounded-xl px-3 py-1.5 text-xs sm:text-sm font-mono text-left text-white outline-none transition-all font-bold ${
-                isManual && !isRemoved
+                !isPriceDisabled
                   ? 'border-[#003566] focus:border-[#FFD60A]'
                   : 'border-[#003566]/40 opacity-50 bg-[#000814]/40 cursor-not-allowed'
               }`}
