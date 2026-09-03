@@ -346,16 +346,6 @@ export const mockMarketSummaryMetrics: MarketSummaryMetric[] = [
     changeAmount: 38000,
   },
   {
-    id: 'sum-gold24',
-    title: 'طلای ۲۴ عیار',
-    subTitle: 'هر گرم ۹۹۹',
-    value: 6593000,
-    unit: 'تومان',
-    changePercentage: 0.78,
-    direction: 'up',
-    changeAmount: 51000,
-  },
-  {
     id: 'sum-mesghal',
     title: 'مثقال طلا',
     subTitle: 'مظنه بازار تهران',

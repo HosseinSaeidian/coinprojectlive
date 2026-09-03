@@ -52,13 +52,6 @@ export const marketService = {
         unit: 'تومان',
       },
       {
-        id: 'sum-gold24',
-        productId: 'gold-24k',
-        title: 'طلای ۲۴ عیار',
-        subTitle: 'هر گرم ۹۹۹',
-        unit: 'تومان',
-      },
-      {
         id: 'sum-mesghal',
         productId: 'gold-mesghal',
         title: 'مثقال طلا',

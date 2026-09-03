@@ -8,6 +8,10 @@ interface MarketSummaryProps {
 }
 
 export const MarketSummary: React.FC<MarketSummaryProps> = ({ metrics }) => {
+  const displayMetrics = metrics.filter(
+    (item) => item.id !== 'sum-gold24' && !item.title.includes('۲۴') && !item.title.includes('24')
+  );
+
   return (
     <div className="w-full bg-[#001D3D]/60 border border-[#003566] rounded-2xl p-5 shadow-lg" id="market-summary-section">
       <div className="flex items-center justify-between mb-4">
@@ -18,8 +22,8 @@ export const MarketSummary: React.FC<MarketSummaryProps> = ({ metrics }) => {
         <span className="text-xs text-slate-400">نمای سریع قیمت‌ها</span>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5">
-        {metrics.map((item) => (
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3.5">
+        {displayMetrics.map((item) => (
           <div
             key={item.id}
             className="bg-[#000814]/80 border border-[#003566] hover:border-[#FFC300]/40 rounded-xl p-3.5 transition-all hover:bg-[#001D3D]/50 flex flex-col justify-between"

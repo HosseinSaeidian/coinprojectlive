@@ -63,7 +63,7 @@ export const HomePage: React.FC = () => {
           </div>
         ) : (
           <>
-            {/* Quick Market Summary (5 Key Indicators) */}
+            {/* Quick Market Summary (Key Indicators) */}
             {marketSummary.length > 0 && <MarketSummary metrics={marketSummary} />}
 
             {/* Dedicated Gold Prices Section */}
