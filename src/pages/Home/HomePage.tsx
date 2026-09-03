@@ -6,7 +6,6 @@ import { MarketSummary } from '../../components/market/MarketSummary';
 import { GoldPricesSection } from '../../components/prices/GoldPricesSection';
 import { CoinPricesSection } from '../../components/prices/CoinPricesSection';
 import { PriceTable } from '../../components/prices/PriceTable';
-import { TrendChart } from '../../components/market/TrendChart';
 import { BubbleSection } from '../../components/market/BubbleSection';
 import { GoldCalculatorModal } from '../../components/market/GoldCalculatorModal';
 import { CardSkeleton, TableSkeleton } from '../../components/common/LoadingState';
@@ -26,12 +25,6 @@ export const HomePage: React.FC = () => {
     error,
     lastRefreshTime,
     secondsUntilNextRefresh,
-    selectedChartSymbol,
-    setSelectedChartSymbol,
-    selectedTimeframe,
-    setSelectedTimeframe,
-    chartData,
-    chartLoading,
     handleManualRefresh,
     retryFetch,
   } = useMarketData();
@@ -81,16 +74,6 @@ export const HomePage: React.FC = () => {
 
             {/* Comprehensive Table */}
             <PriceTable goldItems={goldPrices} coinItems={coinPrices} />
-
-            {/* Price Movement Visualization Line Chart */}
-            <TrendChart
-              data={chartData}
-              loading={chartLoading}
-              selectedSymbol={selectedChartSymbol}
-              onSelectSymbol={setSelectedChartSymbol}
-              selectedTimeframe={selectedTimeframe}
-              onSelectTimeframe={setSelectedTimeframe}
-            />
 
             {/* Coin Bubble Info Section */}
             <BubbleSection bubbles={bubbles} />
