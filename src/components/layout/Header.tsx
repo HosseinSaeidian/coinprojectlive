@@ -130,7 +130,7 @@ export const Header: React.FC<HeaderProps> = ({
 
             {/* Admin Panel Entry Link */}
             <NavLink
-              to="/admin"
+              to="/admin/"
               className={({ isActive }) =>
                 `hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
                   isActive

@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { adminService } from '../../services/adminService';
+import { adminService, PRICE_UPDATE_EVENT } from '../../services/adminService';
+import { priceService } from '../../services/priceService';
 import { ManagedProductItem, PriceSource, AdminProductConfig } from '../../types';
 import { AdminHeader } from '../../components/admin/AdminHeader';
 import { AdminStats } from '../../components/admin/AdminStats';
 import { AdminProductRow } from '../../components/admin/AdminProductRow';
 import { AdminProductCard } from '../../components/admin/AdminProductCard';
+import { toPersianDigits } from '../../utils/formatters';
 import {
   Search,
   Filter,
@@ -42,10 +44,33 @@ export const AdminDashboardPage: React.FC = () => {
   const loadProducts = useCallback(() => {
     const list = adminService.getManagedProducts();
     setProducts(list);
+
+    priceService
+      .getAllPricesForAdmin()
+      .then((livePrices) => {
+        if (livePrices && livePrices.length > 0) {
+          setProducts(adminService.getManagedProducts(livePrices));
+        }
+      })
+      .catch(() => {
+        // Retain current managed products on fetch error
+      });
   }, []);
 
   useEffect(() => {
     loadProducts();
+
+    const handleUpdate = () => {
+      loadProducts();
+    };
+
+    window.addEventListener(PRICE_UPDATE_EVENT, handleUpdate);
+    window.addEventListener('storage', handleUpdate);
+
+    return () => {
+      window.removeEventListener(PRICE_UPDATE_EVENT, handleUpdate);
+      window.removeEventListener('storage', handleUpdate);
+    };
   }, [loadProducts]);
 
   // Trigger Toast
@@ -70,7 +95,11 @@ export const AdminDashboardPage: React.FC = () => {
   ) => {
     adminService.updateProductConfig(id, updates);
     loadProducts();
-    showToast(`تنظیمات نماد با موفقیت ذخیره و در سایت اعمال شد.`);
+    if (updates.isVisible === false) {
+      showToast('نماد با موفقیت از وب‌سایت حذف شد و به بخش «حذف‌شده از سایت» منتقل گردید.');
+    } else {
+      showToast('تنظیمات نماد با موفقیت ذخیره و در سایت اعمال شد.');
+    }
   };
 
   // Handle individual product reset
@@ -79,7 +108,7 @@ export const AdminDashboardPage: React.FC = () => {
     delete stored[id];
     adminService.saveStoredConfigs(stored);
     loadProducts();
-    showToast(`نماد به نرخ پایه بازار بازنشانی گردید.`);
+    showToast('نماد به نرخ پایه بازار و وضعیت فعال بازنشانی گردید.');
   };
 
   // Handle Reset All
@@ -94,24 +123,38 @@ export const AdminDashboardPage: React.FC = () => {
   const stats = useMemo(() => {
     const total = products.length;
     const removed = products.filter((p) => !p.isVisible).length;
+    const active = products.filter((p) => p.isVisible).length;
+    const activeGold = products.filter((p) => p.isVisible && p.category === 'gold').length;
+    const activeCoin = products.filter((p) => p.isVisible && p.category === 'coin').length;
     const pending = products.filter((p) => p.isVisible && p.isPricePending).length;
-    const manual = products.filter((p) => p.manualOverride || p.priceSource === 'manual').length;
-    return { total, removed, pending, manual };
+    const manual = products.filter(
+      (p) => p.isVisible && (p.manualOverride || p.priceSource === 'manual')
+    ).length;
+    return { total, active, removed, pending, manual, activeGold, activeCoin };
   }, [products]);
 
   // Filter and search
   const filteredProducts = useMemo(() => {
     return products.filter((item) => {
-      // Tab filter
-      if (activeFilter === 'gold' && item.category !== 'gold') return false;
-      if (activeFilter === 'coin' && item.category !== 'coin') return false;
-      if (activeFilter === 'global' && item.category !== 'global') return false;
-      if (activeFilter === 'removed' && item.isVisible) return false;
-      if (activeFilter === 'pending' && (!item.isPricePending || !item.isVisible)) return false;
-      if (activeFilter === 'manual' && !(item.manualOverride || item.priceSource === 'manual'))
-        return false;
+      // 1. Separation between removed coins and active coins/categories
+      if (activeFilter === 'removed') {
+        // "حذف شده از سایت" section: strictly only removed/deactivated items
+        if (item.isVisible) return false;
+      } else {
+        // Normal active lists/categories ("همه", "طلا", "سکه", "در انتظار به‌روزرسانی", "دستی"):
+        // strictly only active/visible items (MUST NOT appear here if removed)
+        if (!item.isVisible) return false;
 
-      // Search filter
+        // Specific category/status filtering within active items
+        if (activeFilter === 'gold' && item.category !== 'gold') return false;
+        if (activeFilter === 'coin' && item.category !== 'coin') return false;
+        if (activeFilter === 'global' && item.category !== 'global') return false;
+        if (activeFilter === 'pending' && !item.isPricePending) return false;
+        if (activeFilter === 'manual' && !(item.manualOverride || item.priceSource === 'manual'))
+          return false;
+      }
+
+      // 2. Search filter (name, purity, ID)
       if (searchQuery.trim()) {
         const query = searchQuery.trim().toLowerCase();
         const matchesName = item.name.toLowerCase().includes(query);
@@ -155,6 +198,8 @@ export const AdminDashboardPage: React.FC = () => {
           removedCount={stats.removed}
           pendingCount={stats.pending}
           manualOverrideCount={stats.manual}
+          activeFilter={activeFilter}
+          onSelectFilter={(filter) => setActiveFilter(filter)}
         />
 
         {/* Future Backend & Architecture Notice */}
@@ -168,7 +213,7 @@ export const AdminDashboardPage: React.FC = () => {
                 پنل مدیریت نرخ‌ها و وضعیت انتشار:
               </span>
               <span className="text-slate-400 text-[11px]">
-                تغییرات شما در قیمت‌گذاری دستی، حالت «در انتظار بهروزرسانی» و «حذف از سایت» بلافاصله در وب‌سایت اعمال می‌شوند.
+                تغییرات شما در قیمت‌گذاری دستی، حالت «در انتظار به‌روزرسانی» و «حذف از سایت» بلافاصله در وب‌سایت اعمال می‌شوند.
               </span>
             </div>
           </div>
@@ -214,7 +259,7 @@ export const AdminDashboardPage: React.FC = () => {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                همه ({products.length})
+                همه ({toPersianDigits(stats.active)})
               </button>
 
               <button
@@ -226,7 +271,7 @@ export const AdminDashboardPage: React.FC = () => {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                طلا ({products.filter((p) => p.category === 'gold').length})
+                طلا ({toPersianDigits(stats.activeGold)})
               </button>
 
               <button
@@ -238,7 +283,7 @@ export const AdminDashboardPage: React.FC = () => {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                سکه ({products.filter((p) => p.category === 'coin').length})
+                سکه ({toPersianDigits(stats.activeCoin)})
               </button>
 
               <button
@@ -250,7 +295,7 @@ export const AdminDashboardPage: React.FC = () => {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                در انتظار بهروزرسانی ({stats.pending})
+                در انتظار به‌روزرسانی ({toPersianDigits(stats.pending)})
               </button>
 
               <button
@@ -262,7 +307,7 @@ export const AdminDashboardPage: React.FC = () => {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                حذف‌شده از سایت ({stats.removed})
+                حذف‌شده از سایت ({toPersianDigits(stats.removed)})
               </button>
 
               <button
@@ -274,7 +319,7 @@ export const AdminDashboardPage: React.FC = () => {
                     : 'text-slate-400 hover:text-white'
                 }`}
               >
-                دستی ({stats.manual})
+                دستی ({toPersianDigits(stats.manual)})
               </button>
             </div>
           </div>

@@ -15,7 +15,10 @@ function AppContent() {
   const [isCalculatorOpen, setIsCalculatorOpen] = useState(false);
   const location = useLocation();
 
-  const isAdminDashboard = location.pathname === '/admin';
+  const normalizedPath = location.pathname.replace(/\/+$/, '') || '/';
+  const isAdminDashboard =
+    normalizedPath === '/admin' ||
+    (location.pathname.startsWith('/admin') && !location.pathname.startsWith('/admin/login'));
 
   return (
     <div className="min-h-screen bg-[#000814] text-slate-100 flex flex-col selection:bg-[#FFC300] selection:text-[#000814]">
@@ -43,7 +46,9 @@ function AppContent() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/admin/login" element={<AdminLoginPage />} />
+          <Route path="/admin/login/" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
+          <Route path="/admin/" element={<AdminDashboardPage />} />
         </Routes>
       </main>
 

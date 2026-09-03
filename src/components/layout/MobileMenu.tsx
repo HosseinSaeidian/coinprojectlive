@@ -106,7 +106,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             </NavLink>
 
             <NavLink
-              to="/admin"
+              to="/admin/"
               onClick={onClose}
               className={({ isActive }) =>
                 `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${

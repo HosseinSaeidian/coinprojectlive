@@ -13,10 +13,10 @@ export const AdminLoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // If already authenticated, redirect to /admin
+  // If already authenticated, redirect to /admin/
   useEffect(() => {
     if (adminService.isAuthenticated()) {
-      navigate('/admin', { replace: true });
+      navigate('/admin/', { replace: true });
     }
   }, [navigate]);
 
@@ -36,7 +36,7 @@ export const AdminLoginPage: React.FC = () => {
       setIsLoading(false);
 
       if (result.success) {
-        navigate('/admin');
+        navigate('/admin/');
       } else {
         setError(result.message || 'نام کاربری یا رمز عبور اشتباه است.');
       }

@@ -31,8 +31,12 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
   const [isVisible, setIsVisible] = useState<boolean>(item.isVisible);
   const [isPricePending, setIsPricePending] = useState<boolean>(Boolean(item.isPricePending));
   const [priceSource, setPriceSource] = useState<PriceSource>(item.priceSource);
-  const [buyPriceInput, setBuyPriceInput] = useState<string>(item.buyPrice.toString());
-  const [sellPriceInput, setSellPriceInput] = useState<string>(item.sellPrice.toString());
+  const [buyPriceInput, setBuyPriceInput] = useState<string>(
+    item.buyPrice != null ? item.buyPrice.toString() : ''
+  );
+  const [sellPriceInput, setSellPriceInput] = useState<string>(
+    item.sellPrice != null ? item.sellPrice.toString() : ''
+  );
   const [justSaved, setJustSaved] = useState<boolean>(false);
 
   // Sync state if item prop changes
@@ -40,8 +44,8 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
     setIsVisible(item.isVisible);
     setIsPricePending(Boolean(item.isPricePending));
     setPriceSource(item.priceSource);
-    setBuyPriceInput(item.buyPrice.toString());
-    setSellPriceInput(item.sellPrice.toString());
+    setBuyPriceInput(item.buyPrice != null ? item.buyPrice.toString() : '');
+    setSellPriceInput(item.sellPrice != null ? item.sellPrice.toString() : '');
   }, [item]);
 
   const numBuyPrice = parseFloat(buyPriceInput) || 0;
@@ -75,12 +79,25 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
     setTimeout(() => setJustSaved(false), 2000);
   };
 
+  const handleToggleVisibility = () => {
+    const nextVisible = !isVisible;
+    setIsVisible(nextVisible);
+    onSave(item.id, {
+      isVisible: nextVisible,
+      isPricePending,
+      priceSource,
+      manualOverride: priceSource === 'manual',
+      manualBuyPrice: numBuyPrice,
+      manualSellPrice: numSellPrice,
+    });
+  };
+
   const handleReset = () => {
     setIsVisible(true);
     setIsPricePending(false);
     setPriceSource('manual');
-    setBuyPriceInput(item.apiBuyPrice.toString());
-    setSellPriceInput(item.apiSellPrice.toString());
+    setBuyPriceInput(item.apiBuyPrice != null ? item.apiBuyPrice.toString() : '');
+    setSellPriceInput(item.apiSellPrice != null ? item.apiSellPrice.toString() : '');
     onReset(item.id);
   };
 
@@ -141,16 +158,16 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
       <td className="py-4 px-4 text-center">
         <button
           type="button"
-          onClick={() => setIsVisible(!isVisible)}
+          onClick={handleToggleVisibility}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             isRemoved
               ? 'bg-rose-600/30 text-rose-300 border border-rose-500/50 hover:bg-rose-600/40 shadow-sm'
               : 'bg-[#000814] text-slate-400 border border-[#003566] hover:text-rose-300 hover:border-rose-500/40 hover:bg-rose-500/10'
           }`}
-          title={isRemoved ? 'نماد در سایت نمایش داده نمی‌شود (کلیک جهت بازگردانی)' : 'کلیک جهت حذف از سایت'}
+          title={isRemoved ? 'نماد در وب‌سایت پنهان است (کلیک جهت بازگردانی به وب‌سایت)' : 'کلیک جهت حذف از وب‌سایت'}
         >
-          {isRemoved ? <Trash2 size={14} className="text-rose-400" /> : <Eye size={14} />}
-          <span>{isRemoved ? 'حذف‌شده از سایت' : 'حذف از سایت'}</span>
+          {isRemoved ? <RotateCcw size={14} className="text-rose-400" /> : <Eye size={14} />}
+          <span>{isRemoved ? 'بازگردانی به سایت' : 'حذف از سایت'}</span>
         </button>
       </td>
 

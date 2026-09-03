@@ -5,20 +5,32 @@
 const PERSIAN_DIGITS = ['۰', '۱', '۲', '۳', '۴', '۵', '۶', '۷', '۸', '۹'];
 
 /**
+ * Converts Persian and Arabic digits to English ASCII digits
+ */
+export function toEnglishDigits(str: string | undefined | null): string {
+  if (!str) return '';
+  return str
+    .replace(/[۰-۹]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1728))
+    .replace(/[٠-٩]/g, (d) => String.fromCharCode(d.charCodeAt(0) - 1584));
+}
+
+/**
  * Converts English digits to Persian digits
  */
 export function toPersianDigits(input: number | string | undefined | null): string {
   if (input === undefined || input === null) return '';
-  return input.toString().replace(/\d/g, (char) => PERSIAN_DIGITS[parseInt(char, 10)]);
+  return String(input).replace(/\d/g, (char) => PERSIAN_DIGITS[parseInt(char, 10)]);
 }
 
 /**
  * Formats a number with comma separators using Persian digits
  * Example: 185000000 -> ۱۸۵,۰۰۰,۰۰۰
  */
-export function formatNumberWithCommas(num: number): string {
-  if (num === null || num === undefined || isNaN(num)) return '۰';
-  const parts = num.toString().split('.');
+export function formatNumberWithCommas(num: number | string | null | undefined): string {
+  if (num === null || num === undefined || num === '') return '۰';
+  const parsed = typeof num === 'number' ? num : parseFloat(toEnglishDigits(String(num)));
+  if (isNaN(parsed)) return '۰';
+  const parts = parsed.toString().split('.');
   const integerPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
   const decimalPart = parts[1] ? `.${parts[1]}` : '';
   return toPersianDigits(integerPart + decimalPart);

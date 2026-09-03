@@ -7,6 +7,8 @@ interface AdminStatsProps {
   removedCount: number;
   pendingCount: number;
   manualOverrideCount: number;
+  activeFilter?: string;
+  onSelectFilter?: (filter: 'all' | 'removed' | 'pending' | 'manual') => void;
 }
 
 export const AdminStats: React.FC<AdminStatsProps> = ({
@@ -14,11 +16,18 @@ export const AdminStats: React.FC<AdminStatsProps> = ({
   removedCount,
   pendingCount,
   manualOverrideCount,
+  activeFilter,
+  onSelectFilter,
 }) => {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
       {/* Total Products */}
-      <div className="bg-[#001D3D]/90 border border-[#003566] rounded-2xl p-4 flex items-center justify-between">
+      <div
+        onClick={() => onSelectFilter?.('all')}
+        className={`bg-[#001D3D]/90 border rounded-2xl p-4 flex items-center justify-between transition-all ${
+          onSelectFilter ? 'cursor-pointer hover:border-[#FFC300]/50' : ''
+        } ${activeFilter === 'all' ? 'border-[#FFC300] shadow-md shadow-[#FFC300]/5' : 'border-[#003566]'}`}
+      >
         <div>
           <span className="text-xs text-slate-400 font-medium block mb-1">
             کل نمادها
@@ -33,7 +42,16 @@ export const AdminStats: React.FC<AdminStatsProps> = ({
       </div>
 
       {/* Removed from Site */}
-      <div className="bg-[#001D3D]/90 border border-[#003566] rounded-2xl p-4 flex items-center justify-between">
+      <div
+        onClick={() => onSelectFilter?.('removed')}
+        className={`bg-[#001D3D]/90 border rounded-2xl p-4 flex items-center justify-between transition-all ${
+          onSelectFilter ? 'cursor-pointer hover:border-rose-500/60' : ''
+        } ${
+          activeFilter === 'removed'
+            ? 'border-rose-500 ring-1 ring-rose-500/50 shadow-md shadow-rose-500/10'
+            : 'border-[#003566]'
+        }`}
+      >
         <div>
           <span className="text-xs text-rose-400/90 font-medium block mb-1">
             حذف‌شده از سایت
@@ -48,7 +66,16 @@ export const AdminStats: React.FC<AdminStatsProps> = ({
       </div>
 
       {/* Waiting for Update */}
-      <div className="bg-[#001D3D]/90 border border-[#003566] rounded-2xl p-4 flex items-center justify-between">
+      <div
+        onClick={() => onSelectFilter?.('pending')}
+        className={`bg-[#001D3D]/90 border rounded-2xl p-4 flex items-center justify-between transition-all ${
+          onSelectFilter ? 'cursor-pointer hover:border-amber-500/60' : ''
+        } ${
+          activeFilter === 'pending'
+            ? 'border-amber-500 ring-1 ring-amber-500/50 shadow-md shadow-amber-500/10'
+            : 'border-[#003566]'
+        }`}
+      >
         <div>
           <span className="text-xs text-amber-400/90 font-medium block mb-1">
             {PENDING_UPDATE_TEXT}
@@ -63,7 +90,16 @@ export const AdminStats: React.FC<AdminStatsProps> = ({
       </div>
 
       {/* Manual Overrides */}
-      <div className="bg-[#001D3D]/90 border border-[#003566] rounded-2xl p-4 flex items-center justify-between">
+      <div
+        onClick={() => onSelectFilter?.('manual')}
+        className={`bg-[#001D3D]/90 border rounded-2xl p-4 flex items-center justify-between transition-all ${
+          onSelectFilter ? 'cursor-pointer hover:border-[#FFC300]/60' : ''
+        } ${
+          activeFilter === 'manual'
+            ? 'border-[#FFD60A] ring-1 ring-[#FFD60A]/50 shadow-md shadow-[#FFD60A]/10'
+            : 'border-[#003566]'
+        }`}
+      >
         <div>
           <span className="text-xs text-[#FFD60A] font-medium block mb-1">
             قیمت‌گذاری دستی

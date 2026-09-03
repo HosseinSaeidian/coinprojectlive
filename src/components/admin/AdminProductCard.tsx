@@ -26,16 +26,20 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
   const [isVisible, setIsVisible] = useState<boolean>(item.isVisible);
   const [isPricePending, setIsPricePending] = useState<boolean>(Boolean(item.isPricePending));
   const [priceSource, setPriceSource] = useState<PriceSource>(item.priceSource);
-  const [buyPriceInput, setBuyPriceInput] = useState<string>(item.buyPrice.toString());
-  const [sellPriceInput, setSellPriceInput] = useState<string>(item.sellPrice.toString());
+  const [buyPriceInput, setBuyPriceInput] = useState<string>(
+    item.buyPrice != null ? item.buyPrice.toString() : ''
+  );
+  const [sellPriceInput, setSellPriceInput] = useState<string>(
+    item.sellPrice != null ? item.sellPrice.toString() : ''
+  );
   const [justSaved, setJustSaved] = useState<boolean>(false);
 
   React.useEffect(() => {
     setIsVisible(item.isVisible);
     setIsPricePending(Boolean(item.isPricePending));
     setPriceSource(item.priceSource);
-    setBuyPriceInput(item.buyPrice.toString());
-    setSellPriceInput(item.sellPrice.toString());
+    setBuyPriceInput(item.buyPrice != null ? item.buyPrice.toString() : '');
+    setSellPriceInput(item.sellPrice != null ? item.sellPrice.toString() : '');
   }, [item]);
 
   const numBuyPrice = parseFloat(buyPriceInput) || 0;
@@ -69,12 +73,25 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
     setTimeout(() => setJustSaved(false), 2000);
   };
 
+  const handleToggleVisibility = () => {
+    const nextVisible = !isVisible;
+    setIsVisible(nextVisible);
+    onSave(item.id, {
+      isVisible: nextVisible,
+      isPricePending,
+      priceSource,
+      manualOverride: priceSource === 'manual',
+      manualBuyPrice: numBuyPrice,
+      manualSellPrice: numSellPrice,
+    });
+  };
+
   const handleReset = () => {
     setIsVisible(true);
     setIsPricePending(false);
     setPriceSource('manual');
-    setBuyPriceInput(item.apiBuyPrice.toString());
-    setSellPriceInput(item.apiSellPrice.toString());
+    setBuyPriceInput(item.apiBuyPrice != null ? item.apiBuyPrice.toString() : '');
+    setSellPriceInput(item.apiSellPrice != null ? item.apiSellPrice.toString() : '');
     onReset(item.id);
   };
 
@@ -130,7 +147,7 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
         {/* Remove from Site Toggle */}
         <button
           type="button"
-          onClick={() => setIsVisible(!isVisible)}
+          onClick={handleToggleVisibility}
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             isRemoved
               ? 'bg-rose-600/30 text-rose-300 border border-rose-500/50'
@@ -138,8 +155,8 @@ export const AdminProductCard: React.FC<AdminProductCardProps> = ({
           }`}
           title={isRemoved ? 'کلیک جهت بازگردانی به سایت' : 'کلیک جهت حذف از سایت'}
         >
-          {isRemoved ? <Trash2 size={13} className="text-rose-400" /> : <Eye size={13} />}
-          <span>{isRemoved ? 'حذف‌شده' : 'حذف از سایت'}</span>
+          {isRemoved ? <RotateCcw size={13} className="text-rose-400" /> : <Eye size={13} />}
+          <span>{isRemoved ? 'بازگردانی به سایت' : 'حذف از سایت'}</span>
         </button>
       </div>
 

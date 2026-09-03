@@ -351,6 +351,22 @@ function applyStoredOverrides(items: PriceItem[]): PriceItem[] {
  */
 export const priceService = {
   /**
+   * Fetches all live prices directly without filtering out removed items (specifically for Admin Panel management)
+   */
+  async getAllPricesForAdmin(): Promise<PriceItem[]> {
+    const now = new Date();
+    const cycleTimeFormatted = getCurrentCycleTimeFormatted(now);
+
+    try {
+      const apiItems = await fetchApiPrices();
+      return mapToPriceItems(apiItems, cycleTimeFormatted);
+    } catch (err) {
+      console.warn('[priceService] API fetch failed for admin, rendering catalog with waiting states:', err);
+      return mapToPriceItems([], cycleTimeFormatted);
+    }
+  },
+
+  /**
    * Fetches all prices dynamically from the live API
    */
   async getAllPrices(): Promise<PriceItem[]> {

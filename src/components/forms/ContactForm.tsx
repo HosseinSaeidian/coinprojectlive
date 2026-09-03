@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Send, CheckCircle2, AlertCircle, Loader2 } from 'lucide-react';
 import { contactService } from '../../services/contactService';
 import { ContactFormData } from '../../types';
+import { toEnglishDigits } from '../../utils/formatters';
 
 export const ContactForm: React.FC = () => {
   const [formData, setFormData] = useState<ContactFormData>({
@@ -24,9 +25,10 @@ export const ContactForm: React.FC = () => {
       errors.fullName = 'لطفاً نام و نام خانوادگی خود را وارد نمایید.';
     }
 
-    if (!formData.phoneNumber.trim()) {
+    const cleanPhone = toEnglishDigits(formData.phoneNumber.trim());
+    if (!cleanPhone) {
       errors.phoneNumber = 'لطفاً شماره تماس را وارد فرمایید.';
-    } else if (!/^09\d{9}$/.test(formData.phoneNumber.trim().replace(/[۰-۹]/g, (d) => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d).toString()))) {
+    } else if (!/^09\d{9}$/.test(cleanPhone)) {
       errors.phoneNumber = 'شماره موبایل باید ۱۱ رقمی و با ۰۹ شروع شود.';
     }
 

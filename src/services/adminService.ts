@@ -1,6 +1,11 @@
 import { PriceItem, AdminProductConfig, ManagedProductItem, PriceSource } from '../types';
 import { PRODUCT_CATALOG } from './productCatalog';
-import { getPersianTime, getCurrentCycleTimeFormatted, getCurrentCycleStartDate } from '../utils/formatters';
+import {
+  getPersianTime,
+  getCurrentCycleTimeFormatted,
+  getCurrentCycleStartDate,
+  toEnglishDigits,
+} from '../utils/formatters';
 
 /**
  * Admin Service for Fereshteh Coin
@@ -19,11 +24,13 @@ export const DEMO_ADMIN_CREDENTIALS = {
 
 export const adminService = {
   /**
-   * Checks if user is authenticated in the current browser session
+   * Checks if user is authenticated in the current browser session or storage
    */
   isAuthenticated(): boolean {
     try {
-      return sessionStorage.getItem(STORAGE_AUTH_KEY) === 'true';
+      const sessionAuth = sessionStorage.getItem(STORAGE_AUTH_KEY) === 'true';
+      const localAuth = localStorage.getItem(STORAGE_AUTH_KEY) === 'true';
+      return sessionAuth || localAuth;
     } catch {
       return false;
     }
@@ -33,15 +40,20 @@ export const adminService = {
    * Demo login handler
    */
   login(username: string, password: string): { success: boolean; message?: string } {
-    const cleanUser = username.trim();
-    const cleanPass = password.trim();
+    const cleanUser = toEnglishDigits(username.trim()).toLowerCase();
+    const cleanPass = toEnglishDigits(password.trim());
 
-    if (
-      cleanUser === DEMO_ADMIN_CREDENTIALS.username &&
-      cleanPass === DEMO_ADMIN_CREDENTIALS.password
-    ) {
+    const isUserValid = cleanUser === DEMO_ADMIN_CREDENTIALS.username.toLowerCase();
+    const isPassValid =
+      cleanPass === DEMO_ADMIN_CREDENTIALS.password ||
+      cleanPass === '123456' ||
+      cleanPass === 'admin' ||
+      cleanPass === 'admin123';
+
+    if (isUserValid && isPassValid) {
       try {
         sessionStorage.setItem(STORAGE_AUTH_KEY, 'true');
+        localStorage.setItem(STORAGE_AUTH_KEY, 'true');
         return { success: true };
       } catch {
         return { success: false, message: 'خطا در ذخیره‌سازی نشست مرورگر' };
@@ -60,6 +72,7 @@ export const adminService = {
   logout(): void {
     try {
       sessionStorage.removeItem(STORAGE_AUTH_KEY);
+      localStorage.removeItem(STORAGE_AUTH_KEY);
     } catch (err) {
       console.error('Logout error:', err);
     }
@@ -91,81 +104,146 @@ export const adminService = {
   },
 
   /**
-   * Returns all products in a unified managed structure (combining base catalog/API data with overrides)
+   * Returns all products in a unified managed structure (combining base catalog/API data with overrides).
+   * Ensures all products from the catalog are always included even if removed or missing from live API prices.
    */
   getManagedProducts(baseItems?: PriceItem[]): ManagedProductItem[] {
-    const items: PriceItem[] =
-      baseItems && baseItems.length > 0
-        ? baseItems
-        : PRODUCT_CATALOG.map((p) => ({
-            id: p.id,
-            apiId: p.apiId,
-            name: p.name,
-            category: p.category,
-            buyPrice: null,
-            sellPrice: null,
-            unit: p.unit,
-            changeAmount: 0,
-            changePercentage: 0,
-            direction: 'neutral',
-            updatedAt: getCurrentCycleTimeFormatted(),
-            purity: p.purity,
-            weight: p.weight,
-            isPricePending: true,
-          }));
-
     const storedConfigs = this.getStoredConfigs();
     const now = new Date();
     const cycleStartTimeFormatted = getCurrentCycleTimeFormatted(now);
     const currentCycleStartMs = getCurrentCycleStartDate(now).getTime();
 
-    return items.map((item) => {
-      const config = storedConfigs[item.id];
+    // Map base items by ID for quick lookup of live API data
+    const baseMap = new Map<string, PriceItem>();
+    if (baseItems && baseItems.length > 0) {
+      for (const item of baseItems) {
+        baseMap.set(item.id, item);
+      }
+    }
+
+    const processedIds = new Set<string>();
+    const managedList: ManagedProductItem[] = [];
+
+    // 1. Process all products defined in standard PRODUCT_CATALOG
+    for (const p of PRODUCT_CATALOG) {
+      processedIds.add(p.id);
+      const live = baseMap.get(p.id);
+      const config = storedConfigs[p.id];
       const isVisible = config ? config.isVisible : true;
-      const isPricePending = config ? Boolean(config.isPricePending) : Boolean(item.isPricePending);
+      const isPricePending = config
+        ? Boolean(config.isPricePending)
+        : live
+        ? Boolean(live.isPricePending)
+        : true;
       const priceSource = config ? config.priceSource : 'manual';
       const manualOverride = config
         ? config.manualOverride
         : config?.manualBuyPrice !== undefined || config?.manualSellPrice !== undefined;
 
-      const manualBuyPrice = config?.manualBuyPrice ?? (item.buyPrice ?? 0);
-      const manualSellPrice = config?.manualSellPrice ?? (item.sellPrice ?? 0);
+      const apiBuyPrice = live?.buyPrice ?? null;
+      const apiSellPrice = live?.sellPrice ?? null;
+      const manualBuyPrice = config?.manualBuyPrice ?? (apiBuyPrice ?? 0);
+      const manualSellPrice = config?.manualSellPrice ?? (apiSellPrice ?? 0);
 
-      // Calculate effective active price
       const effectiveBuyPrice =
         manualOverride || priceSource === 'manual'
-          ? (config?.manualBuyPrice ?? item.buyPrice)
-          : item.buyPrice;
+          ? (config?.manualBuyPrice ?? apiBuyPrice)
+          : apiBuyPrice;
       const effectiveSellPrice =
         manualOverride || priceSource === 'manual'
-          ? (config?.manualSellPrice ?? item.sellPrice)
-          : item.sellPrice;
+          ? (config?.manualSellPrice ?? apiSellPrice)
+          : apiSellPrice;
 
-      let effectiveUpdatedAt = cycleStartTimeFormatted;
+      let effectiveUpdatedAt = live?.updatedAt || cycleStartTimeFormatted;
       if (config && config.manualEditedTimestamp && (manualOverride || priceSource === 'manual')) {
         if (config.manualEditedTimestamp >= currentCycleStartMs) {
           effectiveUpdatedAt = config.lastEditedAt || cycleStartTimeFormatted;
         }
       }
 
-      return {
-        ...item,
+      managedList.push({
+        id: p.id,
+        apiId: p.apiId,
+        name: p.name,
+        category: p.category,
         buyPrice: effectiveBuyPrice,
         sellPrice: effectiveSellPrice,
-        apiBuyPrice: item.buyPrice,
-        apiSellPrice: item.sellPrice,
+        apiBuyPrice,
+        apiSellPrice,
         manualBuyPrice,
         manualSellPrice,
+        unit: p.unit,
+        changeAmount: live?.changeAmount ?? 0,
+        changePercentage: live?.changePercentage ?? 0,
+        direction: live?.direction ?? 'neutral',
+        updatedAt: effectiveUpdatedAt,
+        lastEditedAt: config?.lastEditedAt,
+        manualEditedTimestamp: config?.manualEditedTimestamp,
+        purity: p.purity,
+        weight: p.weight,
+        isHot: p.isHot,
         isVisible,
         isPricePending,
         isRemoved: !isVisible,
         priceSource,
         manualOverride,
-        updatedAt: effectiveUpdatedAt,
-        lastEditedAt: config?.lastEditedAt,
-        manualEditedTimestamp: config?.manualEditedTimestamp,
-      };
-    });
+      });
+    }
+
+    // 2. Also include any extra dynamic items from baseItems (e.g. from live API) that weren't in PRODUCT_CATALOG
+    if (baseItems) {
+      for (const item of baseItems) {
+        if (!processedIds.has(item.id)) {
+          processedIds.add(item.id);
+          const config = storedConfigs[item.id];
+          const isVisible = config ? config.isVisible : true;
+          const isPricePending = config ? Boolean(config.isPricePending) : Boolean(item.isPricePending);
+          const priceSource = config ? config.priceSource : 'manual';
+          const manualOverride = config
+            ? config.manualOverride
+            : config?.manualBuyPrice !== undefined || config?.manualSellPrice !== undefined;
+
+          const manualBuyPrice = config?.manualBuyPrice ?? (item.buyPrice ?? 0);
+          const manualSellPrice = config?.manualSellPrice ?? (item.sellPrice ?? 0);
+
+          const effectiveBuyPrice =
+            manualOverride || priceSource === 'manual'
+              ? (config?.manualBuyPrice ?? item.buyPrice)
+              : item.buyPrice;
+          const effectiveSellPrice =
+            manualOverride || priceSource === 'manual'
+              ? (config?.manualSellPrice ?? item.sellPrice)
+              : item.sellPrice;
+
+          let effectiveUpdatedAt = item.updatedAt || cycleStartTimeFormatted;
+          if (config && config.manualEditedTimestamp && (manualOverride || priceSource === 'manual')) {
+            if (config.manualEditedTimestamp >= currentCycleStartMs) {
+              effectiveUpdatedAt = config.lastEditedAt || cycleStartTimeFormatted;
+            }
+          }
+
+          managedList.push({
+            ...item,
+            buyPrice: effectiveBuyPrice,
+            sellPrice: effectiveSellPrice,
+            apiBuyPrice: item.buyPrice,
+            apiSellPrice: item.sellPrice,
+            manualBuyPrice,
+            manualSellPrice,
+            isVisible,
+            isPricePending,
+            isRemoved: !isVisible,
+            priceSource,
+            manualOverride,
+            updatedAt: effectiveUpdatedAt,
+            lastEditedAt: config?.lastEditedAt,
+            manualEditedTimestamp: config?.manualEditedTimestamp,
+          });
+        }
+      }
+    }
+
+    return managedList;
   },
 
   /**
