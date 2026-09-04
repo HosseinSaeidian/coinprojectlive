@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Menu, Calculator, Clock, Activity, ShieldCheck } from 'lucide-react';
+import { Menu, Calculator, Clock, Activity } from 'lucide-react';
 import { FereshtehLogo } from '../brand/FereshtehLogo';
 import { getPersianTime, getPersianDate } from '../../utils/formatters';
 
@@ -127,22 +127,6 @@ export const Header: React.FC<HeaderProps> = ({
               <Calculator size={15} />
               <span>محاسبه‌گر طلا</span>
             </button>
-
-            {/* Admin Panel Entry Link */}
-            <NavLink
-              to="/admin/"
-              className={({ isActive }) =>
-                `hidden sm:inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all ${
-                  isActive
-                    ? 'bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/40 shadow-sm'
-                    : 'bg-[#001D3D] text-slate-300 hover:text-white hover:bg-[#003566] border border-[#003566]'
-                }`
-              }
-              title="ورود به پنل مدیریت دمو"
-            >
-              <ShieldCheck size={15} className="text-[#FFC300]" />
-              <span>پنل مدیریت</span>
-            </NavLink>
 
             {/* Mobile Menu Toggle Button */}
             <button

@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink } from 'react-router-dom';
-import { X, Home, Coins, Info, PhoneCall, Calculator, Sparkles, ShieldCheck } from 'lucide-react';
+import { X, Home, Coins, Info, PhoneCall, Calculator, Sparkles } from 'lucide-react';
 import { FereshtehLogo } from '../brand/FereshtehLogo';
 
 interface MobileMenuProps {
@@ -103,21 +103,6 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({
             >
               <PhoneCall size={18} />
               <span>تماس با ما</span>
-            </NavLink>
-
-            <NavLink
-              to="/admin/"
-              onClick={onClose}
-              className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-xl font-bold text-sm transition-all ${
-                  isActive
-                    ? 'bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30'
-                    : 'text-slate-300 hover:bg-[#003566]/60 hover:text-white'
-                }`
-              }
-            >
-              <ShieldCheck size={18} className="text-[#FFC300]" />
-              <span>پنل مدیریت</span>
             </NavLink>
           </nav>
         </div>

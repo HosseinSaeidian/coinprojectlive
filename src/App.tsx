@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { Header } from './components/layout/Header';
 import { MobileMenu } from './components/layout/MobileMenu';
 import { Footer } from './components/layout/Footer';
@@ -46,8 +46,10 @@ function AppContent() {
           <Route path="/" element={<HomePage />} />
           <Route path="/about" element={<AboutPage />} />
           <Route path="/contact" element={<ContactPage />} />
-          <Route path="/admin/login" element={<AdminLoginPage />} />
-          <Route path="/admin/login/" element={<AdminLoginPage />} />
+          <Route path="/adminfereshteh" element={<AdminLoginPage />} />
+          <Route path="/adminfereshteh/" element={<AdminLoginPage />} />
+          <Route path="/admin/login" element={<Navigate to="/adminfereshteh/" replace />} />
+          <Route path="/admin/login/" element={<Navigate to="/adminfereshteh/" replace />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/" element={<AdminDashboardPage />} />
           <Route path="/admin/monitoring" element={<AdminMonitoringPage />} />

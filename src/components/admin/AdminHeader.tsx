@@ -16,7 +16,7 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onLogout }) => {
     if (onLogout) {
       onLogout();
     } else {
-      navigate('/admin/login');
+      navigate('/adminfereshteh/');
     }
   };
 

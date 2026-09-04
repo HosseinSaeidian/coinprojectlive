@@ -40,7 +40,7 @@ export const AdminDashboardPage: React.FC = () => {
   // Authentication check
   useEffect(() => {
     if (!adminService.isAuthenticated()) {
-      navigate('/admin/login', { replace: true });
+      navigate('/adminfereshteh/', { replace: true });
     }
   }, [navigate]);
 
