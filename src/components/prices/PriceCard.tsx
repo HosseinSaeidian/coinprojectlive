@@ -9,7 +9,8 @@ import {
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
-import { Clock, RefreshCw } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import { getMarketCardStyles } from '../../utils/marketCardStyles';
 
 interface PriceCardProps {
   item: PriceItem;
@@ -25,39 +26,34 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
   const isBuyAvailable = item.isBuyActive !== false && item.buyPrice !== null && item.buyPrice > 0;
   const isSellAvailable = item.isSellActive !== false && item.sellPrice !== null && item.sellPrice > 0;
 
+  const cardStyles = getMarketCardStyles({ isPending: isOverallPending, highlight });
+
   return (
     <div
-      className={`relative rounded-2xl p-5 border transition-all duration-200 flex flex-col justify-between group ${
-        highlight
-          ? 'bg-gradient-to-b from-[#001D3D] to-[#000814] border-[#FFC300]/40 shadow-[0_4px_20px_-2px_rgba(255,195,0,0.15)] hover:border-[#FFD60A]'
-          : 'bg-[#001D3D]/70 hover:bg-[#001D3D] border-[#003566] hover:border-[#FFC300]/40'
-      }`}
+      className={`relative rounded-2xl p-5 border flex flex-col justify-between group ${cardStyles.container}`}
     >
       {/* Header */}
       <div>
-        <div className="flex items-center justify-between gap-2 mb-3">
-          <div className="flex items-center gap-2">
-            <h4 className="text-base font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
+        <div className="relative mb-3 flex items-center justify-center min-h-[32px]">
+          <div className="flex items-center justify-center gap-2 flex-wrap text-center px-8 w-full">
+            <h4 className={`text-lg sm:text-xl font-black text-center tracking-tight leading-snug ${cardStyles.title}`}>
               {item.name}
             </h4>
             {isOverallPending && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse shrink-0">
                 مهم
               </span>
             )}
           </div>
-          {isOverallPending ? (
-            <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30 shrink-0">
-              <RefreshCw size={11} className="animate-spin" />
-              <span>{PENDING_PRICE_TEXT}</span>
-            </span>
-          ) : (
-            <TrendBadge direction={item.direction} percentage={item.changePercentage} />
+          {!isOverallPending && (
+            <div className="absolute left-0 top-0.5 shrink-0">
+              <TrendBadge direction={item.direction} percentage={item.changePercentage} />
+            </div>
           )}
         </div>
 
         {/* Sell / Buy Prices */}
-        <div className="space-y-2.5 my-4 bg-[#000814]/60 rounded-xl p-3 border border-[#003566]/60">
+        <div className={`space-y-2.5 my-4 rounded-xl p-3 border ${cardStyles.innerBox}`}>
           {isOverallPending && !isBuyAvailable && !isSellAvailable ? (
             <div className="py-2.5 text-center space-y-1.5">
               <span className="text-xs text-amber-300/80 block font-medium">نرخ لحظه‌ای معامله:</span>
@@ -121,7 +117,7 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
       </div>
 
       {/* Standardized Bottom Footer */}
-      <div className="pt-2 border-t border-[#003566]/50 flex items-center gap-1.5 text-[11px] text-slate-400">
+      <div className={`pt-2 border-t flex items-center justify-center gap-1.5 text-[11px] text-center ${cardStyles.footer}`}>
         <Clock size={12} className="text-slate-500 shrink-0" />
         <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(item.updatedAt)}</span>
       </div>

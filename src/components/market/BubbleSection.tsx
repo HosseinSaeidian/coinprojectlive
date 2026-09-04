@@ -4,6 +4,7 @@ import { SectionHeader } from '../common/SectionHeader';
 import { formatToman, formatPercentage, PENDING_UPDATE_TEXT, PENDING_PRICE_TEXT } from '../../utils/formatters';
 import { Info, Clock } from 'lucide-react';
 import { TrendBadge } from '../common/Badge';
+import { getMarketCardStyles } from '../../utils/marketCardStyles';
 
 interface BubbleSectionProps {
   bubbles: CoinBubbleItem[];
@@ -30,25 +31,22 @@ export const BubbleSection: React.FC<BubbleSectionProps> = ({ bubbles }) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {bubbles.map((item) => {
           const isPending = Boolean(item.isPricePending || item.price <= 0);
+          const bubbleStyles = getMarketCardStyles({ isPending, highlight: false });
 
           return (
             <div
               key={item.id}
-              className="bg-[#001D3D]/80 border border-[#003566] hover:border-[#FFC300]/50 rounded-2xl p-5 shadow-lg flex flex-col justify-between transition-all"
+              className={`rounded-2xl p-5 flex flex-col justify-between border ${bubbleStyles.container}`}
             >
               <div>
                 <div className="flex justify-between items-start mb-3">
-                  <h4 className="text-base font-extrabold text-white">{item.name}</h4>
-                  {isPending ? (
-                    <span className="text-[10px] text-amber-300 font-bold px-2 py-0.5 rounded-md bg-amber-500/10 border border-amber-500/30">
-                      {PENDING_PRICE_TEXT}
-                    </span>
-                  ) : (
+                  <h4 className={`text-base font-extrabold ${bubbleStyles.title}`}>{item.name}</h4>
+                  {!isPending && (
                     <TrendBadge direction={item.direction} percentage={item.bubblePercentage} />
                   )}
                 </div>
 
-                <div className="space-y-2 bg-[#000814]/70 p-3 rounded-xl border border-[#003566]/60 text-xs">
+                <div className={`space-y-2 p-3 rounded-xl border text-xs ${bubbleStyles.innerBox}`}>
                   {isPending ? (
                     <div className="py-3 text-center space-y-1">
                       <span className="text-xs text-slate-400 block">وضعیت محاسبه:</span>
@@ -79,7 +77,7 @@ export const BubbleSection: React.FC<BubbleSectionProps> = ({ bubbles }) => {
               </div>
 
               {/* Bubble Gauge Visualizer */}
-              <div className="mt-4 pt-3 border-t border-[#003566]/50">
+              <div className={`mt-4 pt-3 border-t ${bubbleStyles.footer}`}>
                 <div className="flex justify-between text-[11px] text-slate-400 mb-1.5">
                   <span>سهم حباب از کل قیمت:</span>
                   <span className="font-bold text-[#FFD60A] tabular-nums">

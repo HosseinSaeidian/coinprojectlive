@@ -152,7 +152,7 @@ export function mapBackendStateToPriceItems(
     results.push({
       id: def.id,
       apiId: matched?.id || def.apiId,
-      name: def.name,
+      name: def.displayName ?? def.name,
       category: def.category,
       buyPrice,
       sellPrice,

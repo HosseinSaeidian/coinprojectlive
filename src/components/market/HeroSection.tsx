@@ -4,6 +4,7 @@ import { BrandPattern } from '../brand/BrandPattern';
 import { PriceItem } from '../../types';
 import { formatToman, formatPercentage, formatMarketUpdateTime, PENDING_UPDATE_TEXT } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
+import { getMarketCardStyles } from '../../utils/marketCardStyles';
 
 interface HeroSectionProps {
   gold18k?: PriceItem;
@@ -82,114 +83,116 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
           {/* Quick Highlight Cards (Desktop & Mobile) */}
           <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-4">
             {/* Highlight 1: Emami Coin */}
-            {coinEmami && (
-              <div className="bg-gradient-to-br from-[#001D3D] to-[#000814] border border-[#003566] hover:border-[#FFC300]/50 rounded-2xl p-5 shadow-xl relative overflow-hidden transition-all group">
-                <div className="absolute top-0 left-0 w-24 h-24 bg-[#FFC300]/5 rounded-full blur-xl group-hover:bg-[#FFC300]/10 transition-all" />
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#FFD60A] block mb-0.5">شاخص سکه</span>
+            {coinEmami && (() => {
+              const isCoinPending = Boolean(coinEmami.isPricePending || (!coinEmami.buyPrice && !coinEmami.sellPrice));
+              const coinStyles = getMarketCardStyles({ isPending: isCoinPending, highlight: true });
+
+              return (
+                <div className={`rounded-2xl p-5 relative overflow-hidden transition-all group border ${coinStyles.container}`}>
+                  <div className={`absolute top-0 left-0 ${coinStyles.ambientGlow}`} />
+                  <div className="relative mb-3 text-center">
+                    <span className="text-xs font-bold text-[#FFD60A] block mb-1 text-center">شاخص سکه</span>
+                    <div className="flex items-center justify-center gap-2 flex-wrap text-center px-8">
+                      <h3 className={`text-xl sm:text-2xl font-black text-center tracking-tight ${coinStyles.title}`}>{coinEmami.name}</h3>
                       {coinEmami.isPricePending && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse shrink-0">
                           مهم
                         </span>
                       )}
                     </div>
-                    <h3 className="text-lg font-extrabold text-white">{coinEmami.name}</h3>
+                    {!coinEmami.isPricePending && (
+                      <div className="absolute left-0 top-0.5 shrink-0">
+                        <TrendBadge direction={coinEmami.direction} percentage={coinEmami.changePercentage} />
+                      </div>
+                    )}
                   </div>
-                  {coinEmami.isPricePending ? (
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                      {PENDING_UPDATE_TEXT}
-                    </span>
-                  ) : (
-                    <TrendBadge direction={coinEmami.direction} percentage={coinEmami.changePercentage} />
-                  )}
-                </div>
 
-                <div className="space-y-1.5">
-                  {coinEmami.isPricePending ? (
-                    <div className="py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
-                      <span className="text-sm font-extrabold text-amber-300">{PENDING_UPDATE_TEXT}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-xs text-slate-400">قیمت فروش:</span>
-                        <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                          {formatToman(coinEmami.sellPrice)}
-                        </span>
+                  <div className={`space-y-1.5 p-3 rounded-xl border ${coinStyles.innerBox}`}>
+                    {coinEmami.isPricePending ? (
+                      <div className="py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-center">
+                        <span className="text-sm font-extrabold text-amber-300">{PENDING_UPDATE_TEXT}</span>
                       </div>
-                      <div className="flex items-baseline justify-between text-xs text-slate-400">
-                        <span>قیمت خرید:</span>
-                        <span className="font-semibold text-slate-300">
-                          {formatToman(coinEmami.buyPrice)}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
+                    ) : (
+                      <>
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-xs text-slate-400">قیمت فروش:</span>
+                          <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                            {formatToman(coinEmami.sellPrice)}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline justify-between text-xs text-slate-400">
+                          <span>قیمت خرید:</span>
+                          <span className="font-semibold text-slate-300">
+                            {formatToman(coinEmami.buyPrice)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-                <div className="mt-3 pt-3 border-t border-[#003566]/80 flex items-center gap-1.5 text-[11px] text-slate-400">
-                  <Clock size={12} className="text-slate-500 shrink-0" />
-                  <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(coinEmami.updatedAt)}</span>
+                  <div className={`mt-3 pt-3 border-t flex items-center justify-center gap-1.5 text-[11px] text-center ${coinStyles.footer}`}>
+                    <Clock size={12} className="text-slate-500 shrink-0" />
+                    <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(coinEmami.updatedAt)}</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
 
             {/* Highlight 2: 18k Gold */}
-            {gold18k && (
-              <div className="bg-gradient-to-br from-[#001D3D] to-[#000814] border border-[#003566] hover:border-[#FFD60A]/50 rounded-2xl p-5 shadow-xl relative overflow-hidden transition-all group">
-                <div className="absolute top-0 left-0 w-24 h-24 bg-[#FFD60A]/5 rounded-full blur-xl group-hover:bg-[#FFD60A]/10 transition-all" />
-                <div className="flex justify-between items-start mb-3">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs font-bold text-[#FFD60A] block mb-0.5">شاخص طلا</span>
+            {gold18k && (() => {
+              const isGoldPending = Boolean(gold18k.isPricePending || (!gold18k.buyPrice && !gold18k.sellPrice));
+              const goldStyles = getMarketCardStyles({ isPending: isGoldPending, highlight: true });
+
+              return (
+                <div className={`rounded-2xl p-5 relative overflow-hidden transition-all group border ${goldStyles.container}`}>
+                  <div className={`absolute top-0 left-0 ${goldStyles.ambientGlow}`} />
+                  <div className="relative mb-3 text-center">
+                    <span className="text-xs font-bold text-[#FFD60A] block mb-1 text-center">شاخص طلا</span>
+                    <div className="flex items-center justify-center gap-2 flex-wrap text-center px-8">
+                      <h3 className={`text-xl sm:text-2xl font-black text-center tracking-tight ${goldStyles.title}`}>{gold18k.name}</h3>
                       {gold18k.isPricePending && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse shrink-0">
                           مهم
                         </span>
                       )}
                     </div>
-                    <h3 className="text-lg font-extrabold text-white">{gold18k.name}</h3>
+                    {!gold18k.isPricePending && (
+                      <div className="absolute left-0 top-0.5 shrink-0">
+                        <TrendBadge direction={gold18k.direction} percentage={gold18k.changePercentage} />
+                      </div>
+                    )}
                   </div>
-                  {gold18k.isPricePending ? (
-                    <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
-                      {PENDING_UPDATE_TEXT}
-                    </span>
-                  ) : (
-                    <TrendBadge direction={gold18k.direction} percentage={gold18k.changePercentage} />
-                  )}
-                </div>
 
-                <div className="space-y-1.5">
-                  {gold18k.isPricePending ? (
-                    <div className="py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/30 text-center">
-                      <span className="text-sm font-extrabold text-amber-300">{PENDING_UPDATE_TEXT}</span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-baseline justify-between">
-                        <span className="text-xs text-slate-400">قیمت هر گرم:</span>
-                        <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
-                          {formatToman(gold18k.sellPrice)}
-                        </span>
+                  <div className={`space-y-1.5 p-3 rounded-xl border ${goldStyles.innerBox}`}>
+                    {gold18k.isPricePending ? (
+                      <div className="py-2 px-3 rounded-xl bg-amber-500/10 border border-amber-500/25 text-center">
+                        <span className="text-sm font-extrabold text-amber-300">{PENDING_UPDATE_TEXT}</span>
                       </div>
-                      <div className="flex items-baseline justify-between text-xs text-slate-400">
-                        <span>قیمت خرید:</span>
-                        <span className="font-semibold text-slate-300">
-                          {formatToman(gold18k.buyPrice)}
-                        </span>
-                      </div>
-                    </>
-                  )}
-                </div>
+                    ) : (
+                      <>
+                        <div className="flex items-baseline justify-between">
+                          <span className="text-xs text-slate-400">قیمت هر گرم:</span>
+                          <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                            {formatToman(gold18k.sellPrice)}
+                          </span>
+                        </div>
+                        <div className="flex items-baseline justify-between text-xs text-slate-400">
+                          <span>قیمت خرید:</span>
+                          <span className="font-semibold text-slate-300">
+                            {formatToman(gold18k.buyPrice)}
+                          </span>
+                        </div>
+                      </>
+                    )}
+                  </div>
 
-                <div className="mt-3 pt-3 border-t border-[#003566]/80 flex items-center gap-1.5 text-[11px] text-slate-400">
-                  <Clock size={12} className="text-slate-500 shrink-0" />
-                  <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(gold18k.updatedAt)}</span>
+                  <div className={`mt-3 pt-3 border-t flex items-center justify-center gap-1.5 text-[11px] text-center ${goldStyles.footer}`}>
+                    <Clock size={12} className="text-slate-500 shrink-0" />
+                    <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(gold18k.updatedAt)}</span>
+                  </div>
                 </div>
-              </div>
-            )}
+              );
+            })()}
           </div>
         </div>
       </div>

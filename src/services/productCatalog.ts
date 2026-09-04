@@ -4,6 +4,7 @@ export interface CatalogProductDefinition {
   id: string;
   apiId?: string;
   name: string;
+  displayName?: string;
   category: 'gold' | 'coin' | 'currency' | 'global';
   unit: 'تومان' | 'دلار';
   purity?: string;
@@ -22,6 +23,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-18k',
     name: 'طلای ۱۸ عیار',
+    displayName: 'طلای ۱۸ عیار',
     category: 'gold',
     unit: 'تومان',
     purity: '۷۵۰/۱۰۰۰',
@@ -32,6 +34,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-24k',
     name: 'طلای ۲۴ عیار',
+    displayName: 'طلای ۲۴ عیار',
     category: 'gold',
     unit: 'تومان',
     purity: '۹۹۹/۱۰۰۰',
@@ -42,6 +45,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-mesghal',
     name: 'مثقال طلا (مظنه)',
+    displayName: 'مثقال طلا',
     category: 'gold',
     unit: 'تومان',
     purity: '۷۰۵/۱۰۰۰ (۱۷ عیار)',
@@ -52,6 +56,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-abshodeh',
     name: 'طلای آبشده نقدی',
+    displayName: 'طلای آبشده',
     category: 'gold',
     unit: 'تومان',
     purity: 'شمش/آبشده استاندارد',
@@ -61,6 +66,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-18k-750',
     name: 'طلای ۱۸ عیار / ۷۵۰',
+    displayName: 'طلای ۱۸ عیار ۷۵۰',
     category: 'gold',
     unit: 'تومان',
     purity: '۷۵۰ استاندارد',
@@ -70,6 +76,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-18k-740',
     name: 'طلای ۱۸ عیار / ۷۴۰',
+    displayName: 'طلای ۱۸ عیار ۷۴۰',
     category: 'gold',
     unit: 'تومان',
     purity: '۷۴۰ کارگاهی',
@@ -79,6 +86,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-used',
     name: 'طلای دست دوم (بدون اجرت)',
+    displayName: 'طلای دست دوم',
     category: 'gold',
     unit: 'تومان',
     purity: '۷۵۰ مستعمل',
@@ -88,6 +96,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-ounce',
     name: 'اونس جهانی طلا',
+    displayName: 'اونس جهانی طلا',
     category: 'global',
     unit: 'دلار',
     weight: '۳۱.۱۰۳ گرم (۲۴ عیار)',
@@ -100,6 +109,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'coin-emami',
     apiId: 'e4fc8a24-9cea-48d8-897e-696e3c6cedeb',
     name: 'تمام سکه ۸۶ (امامی)',
+    displayName: 'سکه امامی',
     category: 'coin',
     unit: 'تومان',
     weight: '۸.۱۳۳ گرم',
@@ -112,6 +122,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'coin-bahar-azadi',
     apiId: 'ec73c538-9d68-4099-a537-3aa31f6013ee',
     name: 'تمام سکه تاریخ پایین (طرح قدیم)',
+    displayName: 'سکه بهار آزادی',
     category: 'coin',
     unit: 'تومان',
     weight: '۸.۱۳۳ گرم',
@@ -123,6 +134,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'coin-nim',
     apiId: '31e3e205-2ab7-49b4-a96a-b614944390a4',
     name: 'نیم سکه ۸۶',
+    displayName: 'نیم سکه',
     category: 'coin',
     unit: 'تومان',
     weight: '۴.۰۶۶ گرم',
@@ -134,6 +146,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'coin-rob',
     apiId: 'a554e4b0-dfc3-421e-ac4d-4660a117f525',
     name: 'ربع سکه ۸۶',
+    displayName: 'ربع سکه',
     category: 'coin',
     unit: 'تومان',
     weight: '۲.۰۳۳ گرم',
@@ -145,6 +158,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'coin-naqd-farda',
     apiId: 'c781493f-b43c-4604-a4d6-479d3309bcbe',
     name: 'سکه نقد فردا',
+    displayName: 'سکه نقد فردا',
     category: 'coin',
     unit: 'تومان',
     weight: '۸.۱۳۳ گرم',
@@ -156,6 +170,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'coin-pas-fardayi',
     apiId: '57d71a72-15c6-4e75-9913-7e4d1a2c76ee',
     name: 'سکه پس فردایی',
+    displayName: 'سکه پسفردایی',
     category: 'coin',
     unit: 'تومان',
     weight: '۸.۱۳۳ گرم',
@@ -167,6 +182,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'silver-nadir-1000',
     apiId: 'a1985fec-0626-4c80-b6d8-5f30d32e725a',
     name: 'شمش نقره ۱۰۰۰ گرمی نادیر',
+    displayName: 'شمش نقره نادیر ۱ کیلویی',
     category: 'coin',
     unit: 'تومان',
     weight: '۱۰۰۰ گرم (۱ کیلو)',
@@ -178,6 +194,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     id: 'silver-emarati-1000',
     apiId: 'a1181a60-ef56-4bf8-8660-10d53dbd0c2a',
     name: 'شمش نقره ۱۰۰۰ گرمی اماراتی',
+    displayName: 'شمش نقره اماراتی ۱ کیلویی',
     category: 'coin',
     unit: 'تومان',
     weight: '۱۰۰۰ گرم (۱ کیلو)',
@@ -188,6 +205,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'coin-gerami',
     name: 'سکه یک گرمی',
+    displayName: 'سکه گرمی',
     category: 'coin',
     unit: 'تومان',
     weight: '۱.۰۱ گرم',
@@ -198,6 +216,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'coin-gerami-banki',
     name: 'سکه گرمی پارسیان (۱ گرم)',
+    displayName: 'سکه پارسیان ۱ گرمی',
     category: 'coin',
     unit: 'تومان',
     weight: '۱.۰۰۰ گرم',
