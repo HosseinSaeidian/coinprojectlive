@@ -126,7 +126,7 @@ export const adminService = {
       managedList.push({
         id: p.id,
         apiId: matched?.id || p.apiId,
-        name: p.name,
+        name: p.displayName ?? p.name,
         category: p.category,
         buyPrice,
         sellPrice,
