@@ -10,7 +10,7 @@ import {
 import { syncMarket, getMarketState } from './apiClient';
 import { PRODUCT_CATALOG, findMatchingApiItem, parseApiPrice } from './productCatalog';
 import { calculateEffectiveProductPrice } from '../utils/priceCalculations';
-import { getCurrentCycleTimeFormatted } from '../utils/formatters';
+import { getCurrentCycleTimeFormatted, formatMarketUpdateTime } from '../utils/formatters';
 
 interface PriceHistoryEntry {
   previousSell: number | null;
@@ -145,6 +145,10 @@ export function mapBackendStateToPriceItems(
 
     const movement = calculatePriceMovement(def.id, sellPrice, buyPrice);
 
+    // Derive updatedAt from matched.lastSeenAt (or config.updatedAt as fallback, otherwise null)
+    const itemTimestamp = matched?.lastSeenAt || config?.updatedAt || null;
+    const updatedAt = itemTimestamp ? formatMarketUpdateTime(itemTimestamp) : null;
+
     results.push({
       id: def.id,
       apiId: matched?.id || def.apiId,
@@ -158,7 +162,7 @@ export function mapBackendStateToPriceItems(
       direction: movement.direction,
       highToday: movement.highToday,
       lowToday: movement.lowToday,
-      updatedAt: cycleTimeFormatted,
+      updatedAt,
       isHot: def.isHot,
       purity: def.purity,
       weight: def.weight,
@@ -191,6 +195,10 @@ export function mapBackendStateToPriceItems(
       const isGold = apiItem.title.includes('طلا') || apiItem.unit === 'gram';
       const movement = calculatePriceMovement(apiItem.id, sellPrice, buyPrice);
 
+      // Derive updatedAt from apiItem.lastSeenAt (or config.updatedAt as fallback, otherwise null)
+      const dynamicTimestamp = apiItem.lastSeenAt || config?.updatedAt || null;
+      const dynamicUpdatedAt = dynamicTimestamp ? formatMarketUpdateTime(dynamicTimestamp) : null;
+
       results.push({
         id: apiItem.id,
         apiId: apiItem.id,
@@ -204,7 +212,7 @@ export function mapBackendStateToPriceItems(
         direction: movement.direction,
         highToday: movement.highToday,
         lowToday: movement.lowToday,
-        updatedAt: cycleTimeFormatted,
+        updatedAt: dynamicUpdatedAt,
         isPricePending,
         isBuyActive,
         isSellActive,

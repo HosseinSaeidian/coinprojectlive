@@ -12,6 +12,7 @@ export interface ApiPriceItem {
   is_active: boolean;
   is_buy_active: boolean;
   is_sell_active: boolean;
+  lastSeenAt?: string;
 }
 
 export interface PriceItem {
@@ -27,7 +28,7 @@ export interface PriceItem {
   direction: TrendDirection;
   highToday?: number | null;
   lowToday?: number | null;
-  updatedAt: string; // Persian formatted time, e.g. "۱۴:۳۵:۱۰"
+  updatedAt: string | null; // Persian formatted time, e.g. "۱۴:۱۵", or null if never seen
   isHot?: boolean;
   purity?: string; // e.g. "۷۵۰/۱۰۰۰"
   weight?: string; // e.g. "۸.۱۳۳ گرم"

@@ -197,3 +197,38 @@ export function formatPriceOrPending(
   return unit === 'دلار' ? formatUSD(amount) : formatToman(amount);
 }
 
+/**
+ * Formats an ISO market update timestamp (e.g. 2026-09-04T10:45:00Z) into Tehran local Persian time: "۱۴:۱۵".
+ * Returns "—" for missing, empty, or invalid timestamps.
+ * Never throws during render.
+ */
+export function formatMarketUpdateTime(timestamp: string | null | undefined): string {
+  if (!timestamp || typeof timestamp !== 'string' || !timestamp.trim() || timestamp === '—') {
+    return '—';
+  }
+
+  try {
+    const trimmed = timestamp.trim();
+    // If already in Persian/English HH:mm format
+    if (/^[0-9۰-۹]{1,2}:[0-9۰-۹]{2}(:[0-9۰-۹]{2})?$/.test(trimmed)) {
+      const parts = trimmed.split(':');
+      return toPersianDigits(`${parts[0]}:${parts[1]}`);
+    }
+
+    const date = new Date(trimmed);
+    if (isNaN(date.getTime())) {
+      return '—';
+    }
+
+    const formatter = new Intl.DateTimeFormat('fa-IR', {
+      timeZone: 'Asia/Tehran',
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+    });
+    return formatter.format(date);
+  } catch {
+    return '—';
+  }
+}
+

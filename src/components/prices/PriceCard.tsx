@@ -3,13 +3,13 @@ import { PriceItem } from '../../types';
 import {
   formatToman,
   formatUSD,
-  formatNumberWithCommas,
   formatChangeAmount,
+  formatMarketUpdateTime,
   PENDING_PRICE_TEXT,
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
-import { Clock, Scale, RefreshCw } from 'lucide-react';
+import { Clock, RefreshCw } from 'lucide-react';
 
 interface PriceCardProps {
   item: PriceItem;
@@ -120,26 +120,10 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
         </div>
       </div>
 
-      {/* Footer Info: Range & Updated time */}
-      <div className="pt-2 border-t border-[#003566]/50 flex items-center justify-between text-[11px] text-slate-400">
-        <div className="flex items-center gap-1">
-          {item.weight ? (
-            <>
-              <Scale size={13} className="text-slate-500" />
-              <span>{item.weight}</span>
-            </>
-          ) : isOverallPending ? (
-            <span>وضعیت: نوسان‌گیری</span>
-          ) : item.lowToday && item.highToday ? (
-            <span>بازه: {formatNumberWithCommas(item.lowToday)} - {formatNumberWithCommas(item.highToday)}</span>
-          ) : (
-            <span>واحد: {item.unit}</span>
-          )}
-        </div>
-        <div className="flex items-center gap-1">
-          <Clock size={12} className="text-slate-500" />
-          <span>{item.updatedAt}</span>
-        </div>
+      {/* Standardized Bottom Footer */}
+      <div className="pt-2 border-t border-[#003566]/50 flex items-center gap-1.5 text-[11px] text-slate-400">
+        <Clock size={12} className="text-slate-500 shrink-0" />
+        <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(item.updatedAt)}</span>
       </div>
     </div>
   );

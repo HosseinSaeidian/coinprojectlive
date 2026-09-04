@@ -1,8 +1,8 @@
 import React from 'react';
-import { Sparkles, ArrowDown, Calculator, TrendingUp, Shield } from 'lucide-react';
+import { Sparkles, ArrowDown, Calculator, TrendingUp, Shield, Clock } from 'lucide-react';
 import { BrandPattern } from '../brand/BrandPattern';
 import { PriceItem } from '../../types';
-import { formatToman, formatPercentage, PENDING_UPDATE_TEXT } from '../../utils/formatters';
+import { formatToman, formatPercentage, formatMarketUpdateTime, PENDING_UPDATE_TEXT } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
 
 interface HeroSectionProps {
@@ -129,9 +129,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   )}
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-[#003566]/80 flex justify-between items-center text-[11px] text-slate-400">
-                  <span>وزن: {coinEmami.weight}</span>
-                  <span className="text-slate-400">بروزرسانی: {coinEmami.updatedAt}</span>
+                <div className="mt-3 pt-3 border-t border-[#003566]/80 flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <Clock size={12} className="text-slate-500 shrink-0" />
+                  <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(coinEmami.updatedAt)}</span>
                 </div>
               </div>
             )}
@@ -184,9 +184,9 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   )}
                 </div>
 
-                <div className="mt-3 pt-3 border-t border-[#003566]/80 flex justify-between items-center text-[11px] text-slate-400">
-                  <span>عیار: {gold18k.purity}</span>
-                  <span className="text-slate-400">بروزرسانی: {gold18k.updatedAt}</span>
+                <div className="mt-3 pt-3 border-t border-[#003566]/80 flex items-center gap-1.5 text-[11px] text-slate-400">
+                  <Clock size={12} className="text-slate-500 shrink-0" />
+                  <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(gold18k.updatedAt)}</span>
                 </div>
               </div>
             )}
