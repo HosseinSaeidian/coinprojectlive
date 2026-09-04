@@ -2,7 +2,7 @@ import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FereshtehLogo } from '../brand/FereshtehLogo';
 import { adminService } from '../../services/adminService';
-import { LogOut, ExternalLink, ShieldCheck, Home } from 'lucide-react';
+import { LogOut, ExternalLink, ShieldCheck, Home, Monitor } from 'lucide-react';
 
 interface AdminHeaderProps {
   onLogout?: () => void;
@@ -54,6 +54,19 @@ export const AdminHeader: React.FC<AdminHeaderProps> = ({ onLogout }) => {
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2.5">
+            {/* Monitoring Display Button */}
+            <Link
+              to="/admin/monitoring"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#FFC300]/20 to-[#FFD60A]/10 hover:from-[#FFC300]/30 hover:to-[#FFD60A]/20 text-[#FFD60A] hover:text-white border border-[#FFC300]/40 hover:border-[#FFD60A] text-xs sm:text-sm font-bold transition-all shadow-sm cursor-pointer group"
+              title="باز کردن تابلوی مانیتورینگ ویترین در پنجره جدید"
+            >
+              <Monitor size={16} className="text-[#FFC300] group-hover:scale-110 transition-transform" />
+              <span>مانیتورینگ</span>
+              <ExternalLink size={12} className="opacity-70" />
+            </Link>
+
             {/* Return to Website */}
             <Link
               to="/"

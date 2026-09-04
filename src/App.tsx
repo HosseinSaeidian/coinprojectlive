@@ -8,6 +8,7 @@ import { AboutPage } from './pages/About/AboutPage';
 import { ContactPage } from './pages/Contact/ContactPage';
 import { AdminLoginPage } from './pages/Admin/AdminLoginPage';
 import { AdminDashboardPage } from './pages/Admin/AdminDashboardPage';
+import { AdminMonitoringPage } from './pages/Admin/AdminMonitoringPage';
 import { GoldCalculatorModal } from './components/market/GoldCalculatorModal';
 
 function AppContent() {
@@ -49,6 +50,8 @@ function AppContent() {
           <Route path="/admin/login/" element={<AdminLoginPage />} />
           <Route path="/admin" element={<AdminDashboardPage />} />
           <Route path="/admin/" element={<AdminDashboardPage />} />
+          <Route path="/admin/monitoring" element={<AdminMonitoringPage />} />
+          <Route path="/admin/monitoring/" element={<AdminMonitoringPage />} />
         </Routes>
       </main>
 
