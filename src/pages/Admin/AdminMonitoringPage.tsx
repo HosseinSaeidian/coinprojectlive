@@ -186,7 +186,7 @@ export const AdminMonitoringPage: React.FC = () => {
     return (
       <div
         key={item.id}
-        className={`relative rounded-2xl sm:rounded-3xl p-5 sm:p-6 border transition-all duration-300 flex flex-col justify-between overflow-hidden group shadow-lg ${
+        className={`relative rounded-2xl sm:rounded-3xl p-4 sm:p-5 lg:p-4 xl:p-5 2xl:p-6 border transition-all duration-300 flex flex-col justify-between overflow-hidden group shadow-lg ${
           isPending
             ? 'bg-[#001022]/95 border-[#002244]/60 shadow-black/40'
             : 'bg-gradient-to-b from-[#001D3D] via-[#001732] to-[#000F22] border-[#003566] hover:border-[#FFC300]/60 shadow-[0_8px_30px_rgba(0,0,0,0.5)]'
@@ -238,43 +238,45 @@ export const AdminMonitoringPage: React.FC = () => {
               </span>
             </div>
           ) : (
-            <div className="space-y-3 rounded-2xl p-4 bg-[#000B1A]/70 border border-[#002B54]/80 shadow-inner">
-              {/* Sell Price (فروش) - Prominent Display */}
-              <div className="flex items-baseline justify-between gap-2">
-                <span className="text-xs sm:text-sm font-bold text-amber-400/90 shrink-0">
+            <div className="space-y-2.5 sm:space-y-3 rounded-2xl p-3 sm:p-3.5 xl:p-4 bg-[#000B1A]/70 border border-[#002B54]/80 shadow-inner">
+              {/* Sell Price (فروش) - Prominent Display, Full Unclipped Value */}
+              <div className="flex items-baseline justify-between gap-1.5 sm:gap-2">
+                <span className="text-xs xl:text-sm font-bold text-amber-400/90 shrink-0 whitespace-nowrap select-none">
                   قیمت فروش:
                 </span>
-                <div className="flex items-baseline gap-1.5 min-w-0">
+                <div className="flex items-baseline gap-1 sm:gap-1.5 shrink-0 justify-end">
                   {hasSell ? (
                     <>
-                      <span className="text-2xl sm:text-3xl lg:text-4xl font-black text-[#FFD60A] tracking-tight tabular-nums truncate">
+                      <span className="text-2xl sm:text-3xl lg:text-[clamp(1.1rem,1.5vw,2.25rem)] min-[1800px]:text-4xl font-black text-[#FFD60A] tracking-tight tabular-nums whitespace-nowrap">
                         {formatNumberWithCommas(item.sellPrice)}
                       </span>
-                      <span className="text-xs sm:text-sm font-extrabold text-slate-400 shrink-0">
+                      <span className="text-[11px] sm:text-xs xl:text-sm font-extrabold text-slate-400 shrink-0 whitespace-nowrap select-none">
                         تومان
                       </span>
                     </>
                   ) : (
-                    <span className="text-sm font-bold text-slate-500">عدم عرضه</span>
+                    <span className="text-xs sm:text-sm font-bold text-slate-500 whitespace-nowrap">عدم عرضه</span>
                   )}
                 </div>
               </div>
 
-              {/* Buy Price (خرید) */}
-              <div className="pt-2 border-t border-[#002447] flex items-baseline justify-between gap-2 text-xs sm:text-sm">
-                <span className="font-semibold text-slate-400 shrink-0">قیمت خرید:</span>
-                <div className="flex items-baseline gap-1.5 min-w-0">
+              {/* Buy Price (خرید) - Full Unclipped Value */}
+              <div className="pt-2 border-t border-[#002447] flex items-baseline justify-between gap-1.5 sm:gap-2">
+                <span className="text-xs xl:text-sm font-semibold text-slate-400 shrink-0 whitespace-nowrap select-none">
+                  قیمت خرید:
+                </span>
+                <div className="flex items-baseline gap-1 sm:gap-1.5 shrink-0 justify-end">
                   {hasBuy ? (
                     <>
-                      <span className="text-lg sm:text-xl font-bold text-slate-200 tracking-tight tabular-nums truncate">
+                      <span className="text-base sm:text-lg lg:text-[clamp(0.875rem,1.1vw,1.25rem)] xl:text-lg font-bold text-slate-200 tracking-tight tabular-nums whitespace-nowrap">
                         {formatNumberWithCommas(item.buyPrice)}
                       </span>
-                      <span className="text-[11px] font-medium text-slate-400 shrink-0">
+                      <span className="text-[10px] sm:text-[11px] xl:text-xs font-medium text-slate-400 shrink-0 whitespace-nowrap select-none">
                         تومان
                       </span>
                     </>
                   ) : (
-                    <span className="text-xs font-semibold text-slate-500">عدم خرید</span>
+                    <span className="text-xs font-semibold text-slate-500 whitespace-nowrap">عدم خرید</span>
                   )}
                 </div>
               </div>
