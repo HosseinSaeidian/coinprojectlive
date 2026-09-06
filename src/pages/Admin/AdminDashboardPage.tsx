@@ -18,7 +18,6 @@ import {
   Loader2,
   Check,
 } from 'lucide-react';
-import { BrandPattern } from '../../components/brand/BrandPattern';
 
 export const AdminDashboardPage: React.FC = () => {
   const navigate = useNavigate();
@@ -234,7 +233,14 @@ export const AdminDashboardPage: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#000814] text-slate-100 pb-16 relative">
-      <BrandPattern opacity={0.06} />
+      {/* Background Image Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.25]"
+        style={{
+          backgroundImage: "url('public/patternback.png')",
+        }}
+        aria-hidden="true"
+      />
 
       <AdminHeader />
 

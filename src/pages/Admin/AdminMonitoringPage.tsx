@@ -10,7 +10,6 @@ import {
   PENDING_PRICE_TEXT,
 } from '../../utils/formatters';
 import { FereshtehLogo } from '../../components/brand/FereshtehLogo';
-import { BrandPattern } from '../../components/brand/BrandPattern';
 import { TrendBadge } from '../../components/common/Badge';
 import {
   Clock,
@@ -318,7 +317,14 @@ export const AdminMonitoringPage: React.FC = () => {
       className="min-h-screen lg:h-screen lg:max-h-screen lg:overflow-hidden bg-[#000814] text-slate-100 flex flex-col justify-between selection:bg-[#FFC300] selection:text-[#000814] relative overflow-x-hidden"
       dir="rtl"
     >
-      <BrandPattern opacity={0.05} />
+      {/* Background Image Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.17]"
+        style={{
+          backgroundImage: "url('/public/patternback.png')",
+        }}
+        aria-hidden="true"
+      />
 
       {/* Top Header Section - Compact */}
       <header className="relative z-20 bg-[#001D3D]/90 border-b border-[#003566] backdrop-blur-md px-3 sm:px-5 lg:px-6 xl:px-8 py-2 lg:py-2.5 shadow-lg shrink-0">

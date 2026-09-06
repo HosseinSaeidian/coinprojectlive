@@ -1,6 +1,5 @@
 import React from 'react';
 import { Sparkles, ArrowDown, Calculator, TrendingUp, Shield, Clock } from 'lucide-react';
-import { BrandPattern } from '../brand/BrandPattern';
 import { PriceItem } from '../../types';
 import { formatToman, formatPercentage, formatMarketUpdateTime, PENDING_UPDATE_TEXT } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
@@ -18,14 +17,27 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   onOpenCalculator,
 }) => {
   return (
-    <div className="relative overflow-hidden pt-8 pb-12 sm:pb-16 bg-gradient-to-b from-[#000814] via-[#001D3D]/50 to-[#000814] border-b border-[#001D3D]" id="hero-section">
-      {/* Brand Pattern Background */}
-      <BrandPattern opacity={0.12} />
+    <div className="relative overflow-hidden pt-8 pb-12 sm:pb-16 bg-[#000814] border-b border-[#001D3D]" id="hero-section">
+      {/* Dark gradient overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#000814]/65 via-[#001D3D]/45 to-[#000814]/70"
+        aria-hidden="true"
+      />
 
-      {/* Decorative Glows */}
+      {/* Pattern Image */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.30]"
+        style={{
+          backgroundImage: "url('/patternback.png')",
+        }}
+        aria-hidden="true"
+      />
+
+      {/* Decorative Subtle Ambient Glows */}
       <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-[#FFC300]/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-10 left-10 w-80 h-80 bg-[#12366F]/30 rounded-full blur-3xl pointer-events-none" />
 
+      {/* Existing Hero Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           {/* Main Headline & Supporting Info */}

@@ -11,7 +11,6 @@ import { GoldCalculatorModal } from '../../components/market/GoldCalculatorModal
 import { CardSkeleton, TableSkeleton } from '../../components/common/LoadingState';
 import { ErrorState } from '../../components/common/ErrorState';
 import { ShieldCheck, Zap, BarChart2, Award } from 'lucide-react';
-import { BrandPattern } from '../../components/brand/BrandPattern';
 
 export const HomePage: React.FC = () => {
   const {
@@ -80,7 +79,14 @@ export const HomePage: React.FC = () => {
 
             {/* Trust & Brand Value Banner */}
             <section className="relative bg-gradient-to-r from-[#001D3D] via-[#003566]/60 to-[#001D3D] border border-[#003566] rounded-3xl p-8 sm:p-10 overflow-hidden shadow-2xl">
-              <BrandPattern opacity={0.05} />
+              {/* Features Box Image Overlay */}
+              <div
+                className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.12]"
+                style={{
+                  backgroundImage: "url('/public/patternback.png')",
+                }}
+                aria-hidden="true"
+              />
               <div className="relative z-10 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-center md:text-right">
                 <div className="space-y-2">
                   <div className="w-12 h-12 rounded-2xl bg-[#12366F] text-[#FFD60A] flex items-center justify-center mx-auto md:mx-0 shadow-md">

@@ -1,5 +1,4 @@
 import React from 'react';
-import { BrandPattern } from '../../components/brand/BrandPattern';
 import { SectionHeader } from '../../components/common/SectionHeader';
 import { ContactForm } from '../../components/forms/ContactForm';
 import { Phone, Mail, MapPin, Clock, MessageSquare, ShieldAlert, Globe } from 'lucide-react';
@@ -9,14 +8,22 @@ export const ContactPage: React.FC = () => {
     <div className="py-10 space-y-16" id="contact-page-container">
       {/* Contact Hero Header */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#001D3D] via-[#000814] to-[#000814] border-b border-[#001D3D] py-16">
-        <BrandPattern opacity={0.06} />
+        {/* Background Image Overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.18]"
+          style={{
+            backgroundImage: "url('/public/patternback.png')",
+          }}
+          aria-hidden="true"
+        />
+
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#001D3D] border border-[#FFC300]/30 text-xs font-semibold text-[#FFD60A]">
             <span>پشتیبانی و ارتباط با کارشناسان</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl font-black text-white tracking-tight">
-            تماس با <span className="text-[#FFD60A]">فرشته کوین</span>
+            تماس با <span className="text-[#FFD60A]">فرشته سکه</span>
           </h1>
 
           <p className="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed">
@@ -31,7 +38,7 @@ export const ContactPage: React.FC = () => {
           <div className="lg:col-span-5 space-y-6">
             <SectionHeader
               title="اطلاعات ارتباطی"
-              subtitle="راه‌های دسترسی مستقیم به دفتر مرکزی فرشته کوین"
+              subtitle="راه‌های دسترسی مستقیم به دفتر مرکزی سکه فرشته"
             />
 
             <div className="space-y-4">

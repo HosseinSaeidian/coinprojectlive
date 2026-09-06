@@ -9,7 +9,13 @@ export const AboutPage: React.FC = () => {
     <div className="py-10 space-y-16" id="about-page-container">
       {/* Hero Header for About Page */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#001D3D] via-[#000814] to-[#000814] border-b border-[#001D3D] py-16">
-        <BrandPattern opacity={0.06} />
+           <div
+          className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.18]"
+          style={{
+            backgroundImage: "url('/public/patternback.png')",
+          }}
+          aria-hidden="true"
+        />
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 space-y-6">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#001D3D] border border-[#FFC300]/30 text-xs font-semibold text-[#FFD60A]">
             <span>درباره پلتفرم تخصصی فرشته کوین</span>
@@ -53,8 +59,15 @@ export const AboutPage: React.FC = () => {
           </div>
 
           <div className="lg:col-span-5">
+         
             <div className="relative bg-gradient-to-br from-[#001D3D] via-[#003566] to-[#000814] border border-[#FFC300]/40 rounded-3xl p-8 shadow-2xl flex flex-col items-center justify-center text-center space-y-6">
-              <BrandPattern opacity={0.1} />
+                 <div
+          className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.18]"
+          style={{
+            backgroundImage: "url('/public/patternback.png')",
+          }}
+          aria-hidden="true"
+        />
               <FereshtehLogo size="xl" />
               <div className="space-y-2 relative z-10">
                 <h3 className="text-lg font-bold text-white">نماد اعتماد و اصالت</h3>

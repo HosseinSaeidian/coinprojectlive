@@ -2,7 +2,6 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Phone, Mail, MapPin, Clock, ShieldCheck, Award, ArrowUp, Globe } from 'lucide-react';
 import { FereshtehLogo } from '../brand/FereshtehLogo';
-import { BrandPattern } from '../brand/BrandPattern';
 
 export const Footer: React.FC = () => {
   const scrollToTop = () => {
@@ -11,8 +10,14 @@ export const Footer: React.FC = () => {
 
   return (
     <footer className="relative bg-[#000814] border-t border-[#001D3D] text-slate-300 pt-16 pb-8 overflow-hidden" id="main-footer">
-      {/* Background Brand Pattern */}
-      <BrandPattern opacity={0.04} />
+      {/* Background Image Overlay */}
+      <div
+        className="absolute inset-0 pointer-events-none bg-cover bg-center bg-no-repeat opacity-[0.15]"
+        style={{
+          backgroundImage: "url('/public/patternback.png')",
+        }}
+        aria-hidden="true"
+      />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-[#001D3D]">
@@ -20,7 +25,7 @@ export const Footer: React.FC = () => {
           <div className="space-y-4 lg:col-span-1">
             <FereshtehLogo size="lg" />
             <p className="text-sm text-slate-400 leading-relaxed pt-2">
-              سامانه جامع «فرشته کوین»، مرجع معتبر و تخصصی استعلام لحظه‌ای نرخ طلا، انواع مسکوکات بهار آزادی، مظنه مثقال و حباب قیمت در بازار ایران با شفافیت و دقت کامل.
+              سامانه جامع «فرشته سکه»، مرجع معتبر و تخصصی استعلام لحظه‌ای نرخ طلا، انواع مسکوکات بهار آزادی، مظنه مثقال و حباب قیمت در بازار ایران با شفافیت و دقت کامل.
             </p>
             <div className="flex items-center gap-3 pt-2">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#001D3D] border border-[#003566] text-xs text-[#FFD60A]">
@@ -74,7 +79,8 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-          {/* Column 3: Market Commodities */}
+        
+  {/* Column 3: Market Commodities */}
           <div className="space-y-3">
             <h4 className="text-base font-bold text-white flex items-center gap-2">
               <span className="w-1.5 h-4 bg-[#FFC300] rounded-sm" />
@@ -83,26 +89,27 @@ export const Footer: React.FC = () => {
             <ul className="space-y-2.5 text-sm text-slate-400">
               <li className="flex justify-between items-center">
                 <span>طلای ۱۸ عیار / ۷۵۰</span>
-                <span className="text-[#FFD60A] text-xs">گرم</span>
+                // <span className="text-[#FFD60A] text-xs">گرم</span>
               </li>
               <li className="flex justify-between items-center">
                 <span>سکه امامی (طرح جدید)</span>
-                <span className="text-[#FFD60A] text-xs">۸.۱۳۳ گرم</span>
+                // <span className="text-[#FFD60A] text-xs">۸.۱۳۳ گرم</span>
               </li>
               <li className="flex justify-between items-center">
                 <span>مثقال طلای تهران</span>
-                <span className="text-[#FFD60A] text-xs">۱۷ عیار</span>
+                // <span className="text-[#FFD60A] text-xs">۱۷ عیار</span>
               </li>
               <li className="flex justify-between items-center">
                 <span>ربع سکه بهار آزادی</span>
-                <span className="text-[#FFD60A] text-xs">۲.۰۳۳ گرم</span>
+                // <span className="text-[#FFD60A] text-xs">۲.۰۳۳ گرم</span>
               </li>
               <li className="flex justify-between items-center">
                 <span>اونس جهانی طلا</span>
-                <span className="text-[#FFD60A] text-xs">XAU/USD</span>
+                // <span className="text-[#FFD60A] text-xs">XAU/USD</span>
               </li>
             </ul>
           </div>
+
 
           {/* Column 4: Contact info */}
           <div className="space-y-3">
