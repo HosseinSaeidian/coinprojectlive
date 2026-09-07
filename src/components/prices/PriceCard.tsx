@@ -82,7 +82,7 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
               <div className="flex items-baseline justify-between text-xs text-slate-400">
                 <span>قیمت خرید:</span>
                 {isBuyAvailable ? (
-                  <span className="font-bold text-[#2ba84a]">
+                  <span className="text-lg font-black text-[#2ba84a]">
                     {isGlobal ? formatUSD(item.buyPrice) : formatToman(item.buyPrice)}
                   </span>
                 ) : (

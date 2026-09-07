@@ -72,8 +72,10 @@ export const FereshtehLogo: React.FC<FereshtehLogoProps> = ({
           <span
             className={`font-bold tracking-tight text-white leading-none ${currentSize.title} flex items-center gap-1.5`}
           >
-            <span className="text-[#FFD60A]">سکه</span>
-            <span>فرشته</span>
+          <span>فرشته</span>
+            <span className="text-[#FFD60A]">کوین</span>
+            
+
           </span>
 
           {showSubtitle && (
