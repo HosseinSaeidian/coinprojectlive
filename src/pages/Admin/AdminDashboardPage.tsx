@@ -24,7 +24,7 @@ export const AdminDashboardPage: React.FC = () => {
   const [products, setProducts] = useState<ManagedProductItem[]>([]);
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [activeFilter, setActiveFilter] = useState<
-    'all' | 'gold' | 'coin' | 'global' | 'removed' | 'pending' | 'manual'
+    'all' | 'gold' | 'coin' | 'silver' | 'global' | 'removed' | 'pending' | 'manual'
   >('all');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [toastType, setToastType] = useState<'success' | 'error'>('success');
@@ -191,11 +191,12 @@ export const AdminDashboardPage: React.FC = () => {
     const active = products.filter((p) => p.isVisible).length;
     const activeGold = products.filter((p) => p.isVisible && p.category === 'gold').length;
     const activeCoin = products.filter((p) => p.isVisible && p.category === 'coin').length;
+    const activeSilver = products.filter((p) => p.isVisible && p.category === 'silver').length;
     const pending = products.filter((p) => p.isVisible && p.isPricePending).length;
     const manual = products.filter(
       (p) => p.isVisible && (p.priceMode === 'manual' || p.manualOverride)
     ).length;
-    return { total, active, removed, pending, manual, activeGold, activeCoin };
+    return { total, active, removed, pending, manual, activeGold, activeCoin, activeSilver };
   }, [products]);
 
   // Filtered list
@@ -212,6 +213,7 @@ export const AdminDashboardPage: React.FC = () => {
         // Specific category/status filtering within active items
         if (activeFilter === 'gold' && item.category !== 'gold') return false;
         if (activeFilter === 'coin' && item.category !== 'coin') return false;
+        if (activeFilter === 'silver' && item.category !== 'silver') return false;
         if (activeFilter === 'global' && item.category !== 'global') return false;
         if (activeFilter === 'pending' && !item.isPricePending) return false;
         if (activeFilter === 'manual' && !(item.priceMode === 'manual' || item.manualOverride))
@@ -413,6 +415,18 @@ export const AdminDashboardPage: React.FC = () => {
                 }`}
               >
                 سکه ({toPersianDigits(stats.activeCoin)})
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setActiveFilter('silver')}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  activeFilter === 'silver'
+                    ? 'bg-[#12366F] text-[#FFD60A] shadow-sm'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                نقره ({toPersianDigits(stats.activeSilver)})
               </button>
 
               <button

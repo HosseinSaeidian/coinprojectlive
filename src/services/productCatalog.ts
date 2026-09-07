@@ -1,11 +1,11 @@
-import { PriceItem, ApiPriceItem } from '../types';
+import { PriceItem, ApiPriceItem, ProductCategory } from '../types';
 
 export interface CatalogProductDefinition {
   id: string;
   apiId?: string;
   name: string;
   displayName?: string;
-  category: 'gold' | 'coin' | 'currency' | 'global';
+  category: ProductCategory;
   unit: 'تومان' | 'دلار';
   purity?: string;
   weight?: string;
@@ -183,7 +183,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     apiId: 'a1985fec-0626-4c80-b6d8-5f30d32e725a',
     name: 'شمش نقره ۱۰۰۰ گرمی نادیر',
     displayName: 'شمش نقره نادیر ۱ کیلویی',
-    category: 'coin',
+    category: 'silver',
     unit: 'تومان',
     weight: '۱۰۰۰ گرم (۱ کیلو)',
     purity: '۹۹۹.۹ خالص',
@@ -195,7 +195,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     apiId: 'a1181a60-ef56-4bf8-8660-10d53dbd0c2a',
     name: 'شمش نقره ۱۰۰۰ گرمی اماراتی',
     displayName: 'شمش نقره اماراتی ۱ کیلویی',
-    category: 'coin',
+    category: 'silver',
     unit: 'تومان',
     weight: '۱۰۰۰ گرم (۱ کیلو)',
     purity: '۹۹۹.۰ استاندارد',

@@ -194,10 +194,12 @@ export const AdminProductRow: React.FC<AdminProductRowProps> = ({
                   ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
                   : item.category === 'coin'
                   ? 'bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30'
+                  : item.category === 'silver'
+                  ? 'bg-slate-500/20 text-slate-200 border border-slate-400/40'
                   : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
               }`}
             >
-              {item.category === 'gold' ? 'طلا' : item.category === 'coin' ? 'سکه' : 'جهانی'}
+              {item.category === 'gold' ? 'طلا' : item.category === 'coin' ? 'سکه' : item.category === 'silver' ? 'نقره' : 'جهانی'}
             </span>
             {isRemoved && (
               <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30">

@@ -14,6 +14,7 @@ import { Search } from 'lucide-react';
 interface PriceTableProps {
   goldItems: PriceItem[];
   coinItems: PriceItem[];
+  silverItems?: PriceItem[];
 }
 
 /**
@@ -25,11 +26,11 @@ function cleanSymbolTitle(name: string): string {
   return name.replace(/\s*[\(\（][^\)\）]*[\)\）]\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
 }
 
-export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) => {
-  const [activeTab, setActiveTab] = useState<'all' | 'gold' | 'coin'>('all');
+export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, silverItems = [] }) => {
+  const [activeTab, setActiveTab] = useState<'all' | 'gold' | 'coin' | 'silver'>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
 
-  const allItems = useMemo(() => [...goldItems, ...coinItems], [goldItems, coinItems]);
+  const allItems = useMemo(() => [...goldItems, ...coinItems, ...silverItems], [goldItems, coinItems, silverItems]);
 
   const filteredItems = useMemo(() => {
     return allItems.filter((item) => {
@@ -38,6 +39,9 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
         return false;
       }
       if (activeTab === 'coin' && item.category !== 'coin') {
+        return false;
+      }
+      if (activeTab === 'silver' && item.category !== 'silver') {
         return false;
       }
 
@@ -57,16 +61,16 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
   return (
     <section className="py-8 scroll-mt-24" id="prices-section">
       <SectionHeader
-        title="جدول جامع قیمت طلا و سکه"
+        title="جدول جامع قیمت طلا، سکه و نقره"
         subtitle="بررسی تطبیقی نرخ خرید، فروش و نوسانات روزانه بازار در قالب جدول تخصصی"
         action={
           <div className="flex items-center gap-2">
             {/* Filter Tabs */}
-            <div className="flex bg-[#001D3D] p-1 rounded-xl border border-[#003566]">
+            <div className="flex flex-wrap bg-[#001D3D] p-1 rounded-xl border border-[#003566]">
               <button
                 onClick={() => setActiveTab('all')}
                 type="button"
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'all'
                     ? 'bg-[#12366F] text-[#FFD60A] shadow-sm'
                     : 'text-slate-400 hover:text-white'
@@ -77,7 +81,7 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
               <button
                 onClick={() => setActiveTab('gold')}
                 type="button"
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'gold'
                     ? 'bg-[#12366F] text-[#FFD60A] shadow-sm'
                     : 'text-slate-400 hover:text-white'
@@ -88,7 +92,7 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
               <button
                 onClick={() => setActiveTab('coin')}
                 type="button"
-                className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
                   activeTab === 'coin'
                     ? 'bg-[#12366F] text-[#FFD60A] shadow-sm'
                     : 'text-slate-400 hover:text-white'
@@ -96,6 +100,19 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
               >
                 سکه ({coinItems.length})
               </button>
+              {silverItems.length > 0 && (
+                <button
+                  onClick={() => setActiveTab('silver')}
+                  type="button"
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                    activeTab === 'silver'
+                      ? 'bg-[#12366F] text-[#FFD60A] shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  نقره ({silverItems.length})
+                </button>
+              )}
             </div>
           </div>
         }
@@ -293,7 +310,7 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
                     {!isSellAvailable ? (
                       <span className="font-bold text-amber-300 text-xs">{PENDING_PRICE_TEXT}</span>
                     ) : (
-                      <span className="font-bold text-white text-sm">
+                      <span className="font-bold text-[#2ba84a] text-sm">
                         {isGlobal ? formatUSD(item.sellPrice) : formatToman(item.sellPrice)}
                       </span>
                     )}
@@ -303,7 +320,7 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
                     {!isBuyAvailable ? (
                       <span className="font-bold text-amber-300 text-xs">{PENDING_PRICE_TEXT}</span>
                     ) : (
-                      <span className="font-semibold text-slate-300">
+                      <span className="font-bold text-[#d90429] text-sm">
                         {isGlobal ? formatUSD(item.buyPrice) : formatToman(item.buyPrice)}
                       </span>
                     )}

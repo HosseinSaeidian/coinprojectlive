@@ -5,6 +5,7 @@ import { MarketStatus } from '../../components/market/MarketStatus';
 import { MarketSummary } from '../../components/market/MarketSummary';
 import { GoldPricesSection } from '../../components/prices/GoldPricesSection';
 import { CoinPricesSection } from '../../components/prices/CoinPricesSection';
+import { SilverPricesSection } from '../../components/prices/SilverPricesSection';
 import { PriceTable } from '../../components/prices/PriceTable';
 import { BubbleSection } from '../../components/market/BubbleSection';
 import { GoldCalculatorModal } from '../../components/market/GoldCalculatorModal';
@@ -16,6 +17,7 @@ export const HomePage: React.FC = () => {
   const {
     goldPrices,
     coinPrices,
+    silverPrices,
     bubbles,
     marketStatus,
     marketSummary,
@@ -71,8 +73,11 @@ export const HomePage: React.FC = () => {
             {/* Dedicated Coin Prices Section */}
             <CoinPricesSection items={coinPrices} />
 
+            {/* Dedicated Silver Prices Section */}
+            <SilverPricesSection items={silverPrices} />
+
             {/* Comprehensive Table */}
-            <PriceTable goldItems={goldPrices} coinItems={coinPrices} />
+            <PriceTable goldItems={goldPrices} coinItems={coinPrices} silverItems={silverPrices} />
 
             {/* Coin Bubble Info Section */}
             <BubbleSection bubbles={bubbles} />

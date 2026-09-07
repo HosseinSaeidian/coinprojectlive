@@ -178,12 +178,14 @@ export const adminService = {
           calculateEffectiveProductPrice(apiBuyPrice, apiSellPrice, config);
 
         const isGold = apiItem.title.includes('طلا') || apiItem.unit === 'gram';
+        const isSilver = apiItem.title.includes('نقره');
+        const dynamicCat = isSilver ? 'silver' : isGold ? 'gold' : 'coin';
 
         managedList.push({
           id: apiItem.id,
           apiId: apiItem.id,
           name: apiItem.title,
-          category: isGold ? 'gold' : 'coin',
+          category: dynamicCat,
           buyPrice,
           sellPrice,
           unit: 'تومان',

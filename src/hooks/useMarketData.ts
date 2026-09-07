@@ -12,6 +12,7 @@ import {
 export function useMarketData() {
   const [goldPrices, setGoldPrices] = useState<PriceItem[]>([]);
   const [coinPrices, setCoinPrices] = useState<PriceItem[]>([]);
+  const [silverPrices, setSilverPrices] = useState<PriceItem[]>([]);
   const [bubbles, setBubbles] = useState<CoinBubbleItem[]>([]);
   const [marketStatus, setMarketStatus] = useState<MarketStatusData | null>(null);
   const [marketSummary, setMarketSummary] = useState<MarketSummaryMetric[]>([]);
@@ -50,6 +51,7 @@ export function useMarketData() {
       const allPrices = mapBackendStateToPriceItems(backendState, cycleTimeFormatted, false);
       const goldRes = allPrices.filter((item) => item.category === 'gold' || item.category === 'global');
       const coinRes = allPrices.filter((item) => item.category === 'coin');
+      const silverRes = allPrices.filter((item) => item.category === 'silver');
       const bubblesRes = priceService.calculateCoinBubbles(allPrices, cycleTimeFormatted);
 
       const [statusRes, summaryRes] = await Promise.all([
@@ -59,6 +61,7 @@ export function useMarketData() {
 
       setGoldPrices(goldRes);
       setCoinPrices(coinRes);
+      setSilverPrices(silverRes);
       setBubbles(bubblesRes);
       setMarketStatus(statusRes);
       setMarketSummary(summaryRes);
@@ -66,7 +69,7 @@ export function useMarketData() {
       setSecondsUntilNextRefresh(getRemainingCycleSeconds(now));
 
       // If currently selected chart symbol becomes hidden, automatically select the first visible fallback symbol
-      const allVisible = [...goldRes, ...coinRes];
+      const allVisible = [...goldRes, ...coinRes, ...silverRes];
       if (allVisible.length > 0) {
         setSelectedChartSymbol((prevSymbol) => {
           const isStillVisible = allVisible.some((p) => p.id === prevSymbol);
@@ -146,6 +149,7 @@ export function useMarketData() {
   return {
     goldPrices,
     coinPrices,
+    silverPrices,
     bubbles,
     marketStatus,
     marketSummary,

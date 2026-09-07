@@ -1,5 +1,6 @@
 import {
   PriceItem,
+  ProductCategory,
   CoinBubbleItem,
   HistoricalPricePoint,
   TrendDirection,
@@ -193,6 +194,8 @@ export function mapBackendStateToPriceItems(
         calculateEffectiveProductPrice(apiBuyPrice, apiSellPrice, config);
 
       const isGold = apiItem.title.includes('طلا') || apiItem.unit === 'gram';
+      const isSilver = apiItem.title.includes('نقره');
+      const dynamicCategory: ProductCategory = isSilver ? 'silver' : isGold ? 'gold' : 'coin';
       const movement = calculatePriceMovement(apiItem.id, sellPrice, buyPrice);
 
       // Derive updatedAt from apiItem.lastSeenAt (or config.updatedAt as fallback, otherwise null)
@@ -203,7 +206,7 @@ export function mapBackendStateToPriceItems(
         id: apiItem.id,
         apiId: apiItem.id,
         name: apiItem.title,
-        category: isGold ? 'gold' : 'coin',
+        category: dynamicCategory,
         buyPrice,
         sellPrice,
         unit: 'تومان',
@@ -351,6 +354,14 @@ export const priceService = {
   async getCoinPrices(forceSync = false): Promise<PriceItem[]> {
     const all = await this.getAllPrices(forceSync);
     return all.filter((item) => item.category === 'coin');
+  },
+
+  /**
+   * Fetches all visible silver prices
+   */
+  async getSilverPrices(forceSync = false): Promise<PriceItem[]> {
+    const all = await this.getAllPrices(forceSync);
+    return all.filter((item) => item.category === 'silver');
   },
 
   /**

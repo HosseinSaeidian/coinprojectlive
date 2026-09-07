@@ -62,6 +62,11 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
+                <a href="/#silver-section" className="text-slate-400 hover:text-[#FFD60A] transition-colors">
+                  قیمت شمش نقره
+                </a>
+              </li>
+              <li>
                 <a href="/#bubbles-section" className="text-slate-400 hover:text-[#FFD60A] transition-colors">
                   تحلیل و محاسبه حباب سکه
                 </a>

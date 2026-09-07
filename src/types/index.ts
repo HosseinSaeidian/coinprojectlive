@@ -1,5 +1,7 @@
 export type TrendDirection = 'up' | 'down' | 'neutral';
 
+export type ProductCategory = 'gold' | 'coin' | 'silver' | 'currency' | 'global';
+
 /**
  * Raw API item interface returned from GET /result
  */
@@ -19,7 +21,7 @@ export interface PriceItem {
   id: string;
   apiId?: string;
   name: string;
-  category: 'gold' | 'coin' | 'currency' | 'global';
+  category: ProductCategory;
   buyPrice: number | null; // In Tomans (or USD for Ounce), null if unavailable/pending
   sellPrice: number | null; // In Tomans (or USD for Ounce), null if unavailable/pending
   unit: 'تومان' | 'دلار';
