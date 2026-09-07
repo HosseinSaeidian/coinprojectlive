@@ -169,7 +169,7 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
                       </td>
 
                       {/* Buy Price */}
-                      <td className="py-4 px-6 text-left font-semibold text-slate-300 tabular-nums">
+                      <td className="py-4 px-6 text-left font-semibold text-[#d90429] text-slate-300 tabular-nums">
                         {!isBuyAvailable ? (
                           <span className="text-xs font-bold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30 inline-block">
                             {PENDING_PRICE_TEXT}
@@ -182,7 +182,7 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems }) 
                       </td>
 
                       {/* Sell Price */}
-                      <td className="py-4 px-6 text-left font-extrabold text-white text-base tabular-nums">
+                      <td className="py-4 px-6 text-left font-extrabold text-[#2ba84a] text-base tabular-nums">
                         {!isSellAvailable ? (
                           <span className="text-xs font-bold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30 inline-block">
                             {PENDING_PRICE_TEXT}

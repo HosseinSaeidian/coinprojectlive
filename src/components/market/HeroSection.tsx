@@ -128,13 +128,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       <>
                         <div className="flex items-baseline justify-between">
                           <span className="text-xs text-slate-400">قیمت فروش:</span>
-                          <span className="text-xl sm:text-2xl font-black text-[#d90429] tracking-tight">
+                          <span className="text-xl sm:text-2xl font-black text-[#2ba84a] tracking-tight">
                             {formatToman(coinEmami.sellPrice)}
                           </span>
                         </div>
                         <div className="flex items-baseline justify-between text-xs text-slate-400">
                           <span>قیمت خرید:</span>
-                          <span className="font-semibold text-[#2ba84a]">
+                          <span className="font-semibold text-[#d90429]">
                             {formatToman(coinEmami.buyPrice)}
                           </span>
                         </div>
@@ -190,7 +190,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         </div>
                         <div className="flex items-baseline justify-between text-xs text-slate-400">
                           <span>قیمت خرید:</span>
-                          <span className="font-semibold text-[#2ba84a]">
+                          <span className="font-semibold text-[#d90429]">
                             {formatToman(gold18k.buyPrice)}
                           </span>
                         </div>
