@@ -134,7 +134,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         </div>
                         <div className="flex items-baseline justify-between text-xs text-slate-400">
                           <span>قیمت خرید:</span>
-                          <span className="font-semibold text-[#d90429]">
+                          <span className="text-xl sm:text-2xl font-black text-[#d90429] tracking-tight">
                             {formatToman(coinEmami.buyPrice)}
                           </span>
                         </div>
