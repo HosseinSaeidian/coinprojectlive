@@ -282,7 +282,11 @@ export const AdminMonitoringPage: React.FC = () => {
                   قیمت خرید:
                 </span>
                 <div className="flex items-baseline gap-1 shrink-0 justify-end">
-                  {hasBuy ? (
+                  {item.id === 'gold-18k' ? (
+                    <span className="text-sm sm:text-base lg:text-[clamp(0.85rem,1.05vw,1.15rem)] xl:text-sm 2xl:text-base font-bold text-slate-400 select-none">
+                      -
+                    </span>
+                  ) : hasBuy ? (
                     <>
                       <span className="text-sm sm:text-base lg:text-[clamp(0.85rem,1.05vw,1.15rem)] xl:text-sm 2xl:text-base font-bold text-slate-200 tracking-tight tabular-nums whitespace-nowrap">
                         {formatNumberWithCommas(item.buyPrice)}
