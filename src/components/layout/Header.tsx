@@ -9,6 +9,26 @@ interface HeaderProps {
   onOpenMobileMenu: () => void;
 }
 
+const getHeaderPersianDate = (): string => {
+  try {
+    const formatter = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+      timeZone: 'Asia/Tehran',
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    });
+    const parts = formatter.formatToParts(new Date());
+    const weekday = parts.find((p) => p.type === 'weekday')?.value || '';
+    const day = parts.find((p) => p.type === 'day')?.value || '';
+    const month = parts.find((p) => p.type === 'month')?.value || '';
+    const year = parts.find((p) => p.type === 'year')?.value || '';
+    return `${weekday} ${day} ${month} ${year}`.trim();
+  } catch {
+    return getPersianDate();
+  }
+};
+
 export const Header: React.FC<HeaderProps> = ({
   onOpenCalculator,
   onOpenMobileMenu,
@@ -114,7 +134,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="tabular-nums tracking-wider">{time}</span>
               </div>
               <span className="text-[11px] text-slate-400 font-medium">
-                {getPersianDate()}
+                {getHeaderPersianDate()}
               </span>
             </div>
 
