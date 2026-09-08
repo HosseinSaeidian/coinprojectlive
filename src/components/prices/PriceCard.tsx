@@ -5,6 +5,7 @@ import {
   formatUSD,
   formatChangeAmount,
   formatMarketUpdateTime,
+  shouldHidePublicBuyPrice,
   PENDING_PRICE_TEXT,
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
@@ -81,7 +82,9 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
               {/* Buy Price */}
               <div className="flex items-baseline justify-between text-xs text-slate-400">
                 <span>قیمت خرید:</span>
-                {isBuyAvailable ? (
+                {shouldHidePublicBuyPrice(item) ? (
+                  <span className="text-base sm:text-lg font-bold text-slate-400">-</span>
+                ) : isBuyAvailable ? (
                   <span className="text-lg font-black text-[#d90429]">
                     {isGlobal ? formatUSD(item.buyPrice) : formatToman(item.buyPrice)}
                   </span>

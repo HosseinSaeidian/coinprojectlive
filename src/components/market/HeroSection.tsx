@@ -1,7 +1,13 @@
 import React from 'react';
 import { Sparkles, ArrowDown, Calculator, TrendingUp, Shield, Clock } from 'lucide-react';
 import { PriceItem } from '../../types';
-import { formatToman, formatPercentage, formatMarketUpdateTime, PENDING_UPDATE_TEXT } from '../../utils/formatters';
+import {
+  formatToman,
+  formatPercentage,
+  formatMarketUpdateTime,
+  shouldHidePublicBuyPrice,
+  PENDING_UPDATE_TEXT,
+} from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
 import { getMarketCardStyles } from '../../utils/marketCardStyles';
 
@@ -190,9 +196,13 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                         </div>
                         <div className="flex items-baseline justify-between text-xs text-slate-400">
                           <span>قیمت خرید:</span>
-                          <span className="font-semibold text-[#d90429]">
-                            {formatToman(gold18k.buyPrice)}
-                          </span>
+                          {shouldHidePublicBuyPrice(gold18k) ? (
+                            <span className="font-semibold text-slate-400">-</span>
+                          ) : (
+                            <span className="font-semibold text-[#d90429]">
+                              {formatToman(gold18k.buyPrice)}
+                            </span>
+                          )}
                         </div>
                       </>
                     )}

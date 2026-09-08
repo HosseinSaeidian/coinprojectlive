@@ -232,3 +232,11 @@ export function formatMarketUpdateTime(timestamp: string | null | undefined): st
   }
 }
 
+/**
+ * Checks if the public buy price should be hidden for a given product.
+ * Per business rules, gold-18k hides its buy price from public users and displays '-'.
+ */
+export function shouldHidePublicBuyPrice(item: { id?: string } | null | undefined): boolean {
+  return item?.id === 'gold-18k';
+}
+

@@ -5,6 +5,7 @@ import {
   formatToman,
   formatUSD,
   formatChangeAmount,
+  shouldHidePublicBuyPrice,
   PENDING_PRICE_TEXT,
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
@@ -187,7 +188,9 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
 
                       {/* Buy Price */}
                       <td className="py-4 px-6 text-left font-semibold text-[#d90429] tabular-nums">
-                        {!isBuyAvailable ? (
+                        {shouldHidePublicBuyPrice(item) ? (
+                          <span className="text-slate-400 font-bold text-sm">-</span>
+                        ) : !isBuyAvailable ? (
                           <span className="text-xs font-bold text-amber-300 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/30 inline-block">
                             {PENDING_PRICE_TEXT}
                           </span>
@@ -317,7 +320,9 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                   </div>
                   <div>
                     <span className="text-slate-400 block text-[10px]">قیمت خرید</span>
-                    {!isBuyAvailable ? (
+                    {shouldHidePublicBuyPrice(item) ? (
+                      <span className="font-bold text-slate-400 text-sm">-</span>
+                    ) : !isBuyAvailable ? (
                       <span className="font-bold text-amber-300 text-xs">{PENDING_PRICE_TEXT}</span>
                     ) : (
                       <span className="font-bold text-[#d90429] text-sm">
