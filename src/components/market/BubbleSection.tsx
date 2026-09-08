@@ -62,7 +62,7 @@ export const BubbleSection: React.FC<BubbleSectionProps> = ({ bubbles }) => {
                         <span className="font-bold text-white tabular-nums">{formatToman(item.price)}</span>
                       </div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-slate-400">ارزش ذاتی طلا:</span>
+                        <span className="text-slate-400">ارزش ذاتی سکه:</span>
                         <span className="font-semibold text-slate-300 tabular-nums">{formatToman(item.realValue)}</span>
                       </div>
                       <div className="pt-2 border-t border-[#003566]/60 flex justify-between items-baseline">

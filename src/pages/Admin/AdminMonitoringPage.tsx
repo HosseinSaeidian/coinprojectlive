@@ -78,7 +78,27 @@ export const AdminMonitoringPage: React.FC = () => {
     }
   });
 
-  const persianDate = getPersianDate();
+  const getMonitoringPersianDate = (): string => {
+    try {
+      const formatter = new Intl.DateTimeFormat('fa-IR-u-ca-persian', {
+        timeZone: 'Asia/Tehran',
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+      });
+      const parts = formatter.formatToParts(new Date());
+      const weekday = parts.find((p) => p.type === 'weekday')?.value || '';
+      const day = parts.find((p) => p.type === 'day')?.value || '';
+      const month = parts.find((p) => p.type === 'month')?.value || '';
+      const year = parts.find((p) => p.type === 'year')?.value || '';
+      return `${weekday} ${day} ${month} ${year}`.trim();
+    } catch {
+      return getPersianDate();
+    }
+  };
+
+  const [persianDate, setPersianDate] = useState<string>(() => getMonitoringPersianDate());
 
   useEffect(() => {
     const clockTimer = setInterval(() => {
@@ -91,6 +111,7 @@ export const AdminMonitoringPage: React.FC = () => {
             hour12: false,
           }).format(new Date())
         );
+        setPersianDate(getMonitoringPersianDate());
       } catch {
         // Fallback
       }
@@ -303,15 +324,6 @@ export const AdminMonitoringPage: React.FC = () => {
             </div>
           )}
         </div>
-
-        {/* Card Footer: Update Time */}
-        <div className="relative z-10 mt-1 pt-1.5 border-t border-[#002447]/80 flex items-center justify-between text-[10px] xl:text-[11px] text-slate-400">
-          <div className="flex items-center gap-1">
-            <Clock size={11} className="text-slate-500 shrink-0" />
-            <span className="truncate">بروزرسانی: {item.updatedAt || 'امروز'}</span>
-          </div>
-          <span className="text-[9px] xl:text-[10px] text-slate-400/80 font-medium shrink-0">فرشته کوین</span>
-        </div>
       </div>
     );
   };
@@ -348,7 +360,7 @@ export const AdminMonitoringPage: React.FC = () => {
                   </span>
                 </div>
                 <p className="text-[11px] text-slate-400 hidden lg:block mt-0.5">
-                  نمایش زنده ویترین فرشته کوین
+                  نمایش زنده طلا فرشته
                 </p>
               </div>
             </div>
