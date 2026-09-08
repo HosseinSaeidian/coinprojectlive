@@ -190,7 +190,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       <>
                         <div className="flex items-baseline justify-between">
                           <span className="text-xs text-slate-400">قیمت هر گرم:</span>
-                          <span className="text-xl sm:text-2xl font-black text-white tracking-tight">
+                          <span className="text-xl sm:text-2xl font-black text-[#2ba84a] tracking-tight">
                             {formatToman(gold18k.sellPrice)}
                           </span>
                         </div>
