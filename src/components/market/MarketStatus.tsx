@@ -35,7 +35,7 @@ export const MarketStatus: React.FC<MarketStatusProps> = ({
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500 shadow-[0_0_8px_#10B981]" />
               </>
             ) : (
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-500" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500 shadow-[0_0_8px_#F43F5E]" />
             )}
           </div>
 
@@ -44,12 +44,24 @@ export const MarketStatus: React.FC<MarketStatusProps> = ({
               <h3 className="text-sm sm:text-base font-extrabold text-white">
                 وضعیت بازار:
               </h3>
-              <span className="text-xs sm:text-sm font-bold text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
-                {status?.statusText || 'بازار فعال'}
+              <span
+                className={`text-xs sm:text-sm font-bold px-2.5 py-0.5 rounded-full border ${
+                  isOpen
+                    ? 'text-emerald-400 bg-emerald-950/60 border-emerald-500/30'
+                    : 'text-rose-400 bg-rose-950/60 border-rose-500/30'
+                }`}
+              >
+                {status?.statusText || (isOpen ? 'بازار فعال و نرخ‌ها برخط می‌باشند' : 'بازار بسته است')}
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              حجم معاملات: <span className="text-slate-200 font-semibold">{status?.totalVolumeStatus || 'بالا'}</span> • مرجع: بازار طلا و جواهر تهران
+              {isOpen ? (
+                <>
+                  حجم معاملات: <span className="text-slate-200 font-semibold">{status?.totalVolumeStatus || 'بالا'}</span> • مرجع: بازار طلا و جواهر تهران
+                </>
+              ) : (
+                <>ساعات فعالیت بازار: ۱۰:۳۰ تا ۲۱:۰۰ به وقت ایران • مرجع: بازار طلا و جواهر تهران</>
+              )}
             </p>
           </div>
         </div>
