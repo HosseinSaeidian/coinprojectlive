@@ -12,7 +12,7 @@ import {
 import { priceService } from './priceService';
 import { isIranMarketOpen } from './marketService';
 import { PRODUCT_CATALOG, findMatchingApiItem, parseApiPrice } from './productCatalog';
-import { calculateEffectiveProductPrice } from '../utils/priceCalculations';
+import { calculateEffectiveProductPrice, getDerivedGoldMesghalBasePrices, getDerivedGold18kBasePrices } from '../utils/priceCalculations';
 import { getCurrentCycleTimeFormatted } from '../utils/formatters';
 
 export const ADMIN_AUTH_KEY = 'fereshteh_admin_auth';
@@ -125,6 +125,10 @@ export const adminService = {
     const now = new Date();
     const cycleStartTimeFormatted = getCurrentCycleTimeFormatted(now);
 
+    // Derive API base prices for gold-mesghal and gold-18k from coin-naqd-farda's effective prices
+    const derivedMesghalBase = getDerivedGoldMesghalBasePrices(rawItems, configs);
+    const derivedGold18kBase = getDerivedGold18kBasePrices(rawItems, configs);
+
     const processedApiIds = new Set<string>();
     const managedList: ManagedProductItem[] = [];
 
@@ -139,8 +143,20 @@ export const adminService = {
       const isSellActiveOnApi = matched ? matched.is_active !== false && matched.is_sell_active !== false : false;
 
       // Upstream Mapping: website.buyPrice = upstream API sell_price; website.sellPrice = upstream API buy_price
-      const apiBuyPrice = isBuyActiveOnApi && matched ? parseApiPrice(matched.sell_price) : null;
-      const apiSellPrice = isSellActiveOnApi && matched ? parseApiPrice(matched.buy_price) : null;
+      let apiBuyPrice = isBuyActiveOnApi && matched ? parseApiPrice(matched.sell_price) : null;
+      let apiSellPrice = isSellActiveOnApi && matched ? parseApiPrice(matched.buy_price) : null;
+
+      // RULE: gold-mesghal API base derives from coin-naqd-farda's final/effective prices.
+      // If coin-naqd-farda is unavailable, base remains null. Never falls back to upstream gold-mesghal price.
+      if (p.id === 'gold-mesghal') {
+        apiBuyPrice = derivedMesghalBase.apiBuyPrice;
+        apiSellPrice = derivedMesghalBase.apiSellPrice;
+      } else if (p.id === 'gold-18k') {
+        // RULE: gold-18k API base derives from coin-naqd-farda's final/effective prices / 4.3318.
+        // If coin-naqd-farda is unavailable, base remains null. Never falls back to upstream gold-18k price.
+        apiBuyPrice = derivedGold18kBase.apiBuyPrice;
+        apiSellPrice = derivedGold18kBase.apiSellPrice;
+      }
 
       const config: ProductServerConfig | undefined = configs[p.id];
       const isVisible = config ? config.isVisible !== false : true;
