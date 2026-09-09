@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { PriceItem } from '../../types';
+import { PriceItem, BackendMarketState } from '../../types';
 import { priceService, mapBackendStateToPriceItems } from '../../services/priceService';
+import { isIranMarketOpen } from '../../services/marketService';
+import { getMarketState } from '../../services/apiClient';
 import { PRICE_UPDATE_EVENT } from '../../services/adminService';
 import {
   formatNumberWithCommas,
@@ -171,8 +173,26 @@ export const AdminMonitoringPage: React.FC = () => {
       }
       setError(null);
 
-      // Single centralized state request
-      const backendState = await priceService.fetchCurrentState();
+      const isOpen = isIranMarketOpen();
+      let backendState: BackendMarketState;
+
+      if (isOpen) {
+        backendState = await priceService.fetchCurrentState();
+      } else {
+        try {
+          backendState = await getMarketState();
+          priceService.setBackendState(backendState);
+        } catch (err) {
+          const cachedState = priceService.getCachedState();
+          if (cachedState) {
+            backendState = cachedState;
+          } else {
+            console.warn('[AdminMonitoringPage] Failed to fetch state in CLOSED and no cache available:', err);
+            return;
+          }
+        }
+      }
+
       const cycleFormatted = getCurrentCycleTimeFormatted(new Date());
 
       // Map with includeHidden = true to ensure all 7 catalog items are available
@@ -218,6 +238,9 @@ export const AdminMonitoringPage: React.FC = () => {
 
     // 30-second centralized polling
     const interval = setInterval(() => {
+      if (!isIranMarketOpen()) {
+        return;
+      }
       loadMonitoringData(true);
     }, 30000);
 

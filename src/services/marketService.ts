@@ -7,7 +7,7 @@ import { getCurrentCycleTimeFormatted, getRemainingCycleSeconds } from '../utils
  * based strictly on official Tehran local time (Asia/Tehran).
  * Working hours: 10:30:00 to 20:59:59 inclusive (i.e. < 21:00:00).
  */
-export function isIranMarketOpen(now: Date = new Date()): boolean {
+export function isIranMarketOpen(date = new Date()): boolean {
   try {
     const formatter = new Intl.DateTimeFormat('en-US', {
       timeZone: 'Asia/Tehran',
@@ -16,7 +16,7 @@ export function isIranMarketOpen(now: Date = new Date()): boolean {
       second: 'numeric',
       hour12: false,
     });
-    const parts = formatter.formatToParts(now);
+    const parts = formatter.formatToParts(date);
     const hourPart = parts.find((p) => p.type === 'hour')?.value;
     const minutePart = parts.find((p) => p.type === 'minute')?.value;
     const secondPart = parts.find((p) => p.type === 'second')?.value;
@@ -34,9 +34,9 @@ export function isIranMarketOpen(now: Date = new Date()): boolean {
     return totalSeconds >= OPEN_SECONDS && totalSeconds < CLOSE_SECONDS;
   } catch {
     // Safe deterministic fallback using Iran standard offset (UTC+3:30)
-    const utcHours = now.getUTCHours();
-    const utcMinutes = now.getUTCMinutes();
-    const utcSeconds = now.getUTCSeconds();
+    const utcHours = date.getUTCHours();
+    const utcMinutes = date.getUTCMinutes();
+    const utcSeconds = date.getUTCSeconds();
     const totalUtcSeconds = utcHours * 3600 + utcMinutes * 60 + utcSeconds;
     const totalIranSeconds = (totalUtcSeconds + 12600) % 86400;
 
@@ -62,10 +62,10 @@ export const marketService = {
       isOpen,
       statusText: isOpen ? 'بازار فعال و نرخ‌ها برخط می‌باشند' : 'بازار بسته است',
       lastUpdated: `امروز، ${getCurrentCycleTimeFormatted(now)}`,
-      nextUpdateSeconds: getRemainingCycleSeconds(now),
+      nextUpdateSeconds: isOpen ? getRemainingCycleSeconds(now) : 0,
       marketMessage: isOpen
         ? 'نرخ‌های اعلامی به صورت برخط و زنده از وب‌سرویس مرجع بازار استعلام می‌گردند.'
-        : 'ساعات فعالیت بازار: ۱۰:۳۰ تا ۲۱:۰۰ به وقت ایران',
+        : 'بازار از ساعت ۱۰:۳۰ صبح به وقت ایران فعالیت خود را از سر می‌گیرد.',
       totalVolumeStatus: isOpen ? 'بالا' : 'پایین',
       isApiConnected: true,
     };

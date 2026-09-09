@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { adminService, PRICE_UPDATE_EVENT } from '../../services/adminService';
-import { priceService } from '../../services/priceService';
 import { ManagedProductItem, ProductServerConfig } from '../../types';
 import { AdminHeader } from '../../components/admin/AdminHeader';
 import { AdminStats } from '../../components/admin/AdminStats';
@@ -46,8 +45,12 @@ export const AdminDashboardPage: React.FC = () => {
   // Load products data
   const loadProducts = useCallback(async () => {
     try {
-      const state = await priceService.fetchCurrentState();
-      setProducts(adminService.getManagedProducts(state));
+      const state = await adminService.fetchAdminState();
+      if (state) {
+        setProducts(adminService.getManagedProducts(state));
+      } else {
+        setProducts(adminService.getManagedProducts());
+      }
     } catch (err) {
       console.error('Failed to load products for admin:', err);
       setProducts(adminService.getManagedProducts());

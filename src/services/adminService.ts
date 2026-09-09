@@ -7,8 +7,10 @@ import {
   saveAdminProduct,
   saveAdminProducts,
   resetAdminProducts,
+  getMarketState,
 } from './apiClient';
 import { priceService } from './priceService';
+import { isIranMarketOpen } from './marketService';
 import { PRODUCT_CATALOG, findMatchingApiItem, parseApiPrice } from './productCatalog';
 import { calculateEffectiveProductPrice } from '../utils/priceCalculations';
 import { getCurrentCycleTimeFormatted } from '../utils/formatters';
@@ -76,6 +78,34 @@ export const adminService = {
     } catch (err) {
       console.warn('Storage error during logout:', err);
     }
+  },
+
+  /**
+   * Safe Admin State fetcher:
+   * - During OPEN hours (10:30 <= Iran Time < 21:00): uses priceService.fetchCurrentState().
+   * - During CLOSED hours: only uses GET /api/v1/market/state, falling back to cache or null without any POST /sync.
+   */
+  async fetchAdminState(): Promise<BackendMarketState | null> {
+    if (isIranMarketOpen()) {
+      return await priceService.fetchCurrentState();
+    }
+
+    try {
+      const state = await getMarketState();
+      if (state) {
+        priceService.setBackendState(state);
+        return state;
+      }
+    } catch (err) {
+      console.warn('[adminService] Failed to fetch market state in CLOSED mode:', err);
+    }
+
+    const cachedState = priceService.getCachedState();
+    if (cachedState) {
+      return cachedState;
+    }
+
+    return null;
   },
 
   /**
@@ -249,8 +279,8 @@ export const adminService = {
     if (res.state) {
       priceService.setBackendState(res.state);
     } else {
-      // Re-fetch state
-      await priceService.fetchCurrentState();
+      // Re-fetch state safely
+      await this.fetchAdminState();
     }
 
     this.notifyPriceUpdate();
@@ -266,7 +296,7 @@ export const adminService = {
     if (res.state) {
       priceService.setBackendState(res.state);
     } else {
-      await priceService.fetchCurrentState();
+      await this.fetchAdminState();
     }
 
     this.notifyPriceUpdate();

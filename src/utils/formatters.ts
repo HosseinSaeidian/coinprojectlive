@@ -96,20 +96,18 @@ export function getPersianDate(): string {
 }
 
 /**
- * Global update cycle interval: 15 minutes (900 seconds)
+ * Global update cycle interval: 1 minute (60 seconds)
  */
-export const GLOBAL_CYCLE_MINUTES = 15;
+export const GLOBAL_CYCLE_MINUTES = 1;
 export const GLOBAL_CYCLE_SECONDS = GLOBAL_CYCLE_MINUTES * 60;
 
 /**
- * Returns the number of seconds remaining in the current 15-minute update cycle.
+ * Returns the number of seconds remaining in the current 1-minute update cycle.
  * For example:
- * 16:00:00 -> 900s (15:00)
- * 16:01:00 -> 840s (14:00)
- * 16:05:00 -> 600s (10:00)
- * 16:12:30 -> 150s (02:30)
- * 16:14:59 -> 1s (00:01)
- * 16:15:00 -> 900s (15:00)
+ * 16:00:00 -> 60s (01:00)
+ * 16:00:30 -> 30s (00:30)
+ * 16:00:59 -> 1s (00:01)
+ * 16:01:00 -> 60s (01:00)
  */
 export function getRemainingCycleSeconds(date = new Date()): number {
   const minutes = date.getMinutes();
@@ -120,7 +118,7 @@ export function getRemainingCycleSeconds(date = new Date()): number {
 }
 
 /**
- * Formats countdown seconds to MM:SS with Persian digits (e.g. ۱۵:۰۰, ۱۴:۵۹, ۰۰:۰۱, ۰۰:۰۰)
+ * Formats countdown seconds to MM:SS with Persian digits (e.g. ۰۱:۰۰, ۰۰:۵۹, ۰۰:۰۱, ۰۰:۰۰)
  */
 export function formatCountdownMinutes(totalSeconds: number): string {
   const safeSeconds = Math.max(0, Math.min(GLOBAL_CYCLE_SECONDS, totalSeconds));
@@ -132,7 +130,7 @@ export function formatCountdownMinutes(totalSeconds: number): string {
 }
 
 /**
- * Returns the Date representing the start of the current 15-minute cycle (e.g. 16:00:00, 16:15:00, 16:30:00, 16:45:00)
+ * Returns the Date representing the start of the current 1-minute cycle (e.g. 16:00:00, 16:01:00, 16:02:00)
  */
 export function getCurrentCycleStartDate(date = new Date()): Date {
   const cycleStart = new Date(date);
@@ -143,7 +141,7 @@ export function getCurrentCycleStartDate(date = new Date()): Date {
 }
 
 /**
- * Returns the formatted Persian time for the start of the current 15-minute cycle (e.g. "۱۶:۰۰:۰۰" or "۱۶:۱۵:۰۰")
+ * Returns the formatted Persian time for the start of the current 1-minute cycle (e.g. "۱۶:۰۰:۰۰" or "۱۶:۰۱:۰۰")
  */
 export function getCurrentCycleTimeFormatted(date = new Date()): string {
   const cycleStart = getCurrentCycleStartDate(date);

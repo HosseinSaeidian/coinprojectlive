@@ -2,6 +2,7 @@ import React from 'react';
 import { RefreshCw, Activity, ShieldCheck } from 'lucide-react';
 import { MarketStatusData } from '../../types';
 import { formatCountdownMinutes } from '../../utils/formatters';
+import { isIranMarketOpen } from '../../services/marketService';
 
 interface MarketStatusProps {
   status: MarketStatusData | null;
@@ -18,11 +19,13 @@ export const MarketStatus: React.FC<MarketStatusProps> = ({
   onRefresh,
   secondsLeft,
 }) => {
-  const isOpen = status?.isOpen ?? true;
+  const isOpen = status?.isOpen ?? isIranMarketOpen();
 
   return (
     <div
-      className="w-full bg-[#001D3D]/90 border border-[#003566] rounded-2xl p-4 sm:p-5 shadow-lg backdrop-blur-md transition-all"
+      className={`w-full bg-[#001D3D]/90 border rounded-2xl p-4 sm:p-5 shadow-lg backdrop-blur-md transition-all ${
+        isOpen ? 'border-[#003566]' : 'border-rose-900/60'
+      }`}
       id="market-status-banner"
     >
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
@@ -51,7 +54,7 @@ export const MarketStatus: React.FC<MarketStatusProps> = ({
                     : 'text-rose-400 bg-rose-950/60 border-rose-500/30'
                 }`}
               >
-                {status?.statusText || (isOpen ? 'بازار فعال و نرخ‌ها برخط می‌باشند' : 'بازار بسته است')}
+                {isOpen ? (status?.statusText || 'بازار فعال و نرخ‌ها برخط می‌باشند') : 'بازار بسته است'}
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
@@ -77,7 +80,7 @@ export const MarketStatus: React.FC<MarketStatusProps> = ({
 
           <div className="flex items-center gap-2">
             <span className="hidden sm:inline-block text-[11px] text-slate-400 bg-[#000814] px-2 py-1 rounded-md border border-[#003566]">
-              بروزرسانی خودکار در: <strong className="text-[#FFD60A] tabular-nums font-mono">{formatCountdownMinutes(secondsLeft)}</strong>
+              بروزرسانی خودکار در: <strong className="text-[#FFD60A] tabular-nums font-mono">{isOpen ? formatCountdownMinutes(secondsLeft) : formatCountdownMinutes(0)}</strong>
             </span>
 
             <button
