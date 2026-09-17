@@ -84,8 +84,7 @@ export const Footer: React.FC = () => {
             </ul>
           </div>
 
-        
-  {/* Column 3: Market Commodities */}
+          {/* Column 3: Market Commodities */}
           <div className="space-y-3">
             <h4 className="text-base font-bold text-white flex items-center gap-2">
               <span className="w-1.5 h-4 bg-[#FFC300] rounded-sm" />
@@ -93,24 +92,24 @@ export const Footer: React.FC = () => {
             </h4>
             <ul className="space-y-2.5 text-sm text-slate-400">
               <li className="flex justify-between items-center">
-                <span>طلای ۱۸ عیار / ۷۵۰</span>
-                // <span className="text-[#FFD60A] text-xs">گرم</span>
+                <span>سکه تمام (طرح قدیم و جدید)</span>
+                // <span className="text-[#FFD60A] text-xs">۸/۱۳۳ گرم عیار ۹۰۰</span>
               </li>
               <li className="flex justify-between items-center">
-                <span>سکه امامی (طرح جدید)</span>
-                // <span className="text-[#FFD60A] text-xs">۸.۱۳۳ گرم</span>
+                <span>سکه نیم</span>
+                // <span className="text-[#FFD60A] text-xs">۴/۰۶۶ گرم عیار ۹۰۰</span>
               </li>
               <li className="flex justify-between items-center">
-                <span>مثقال طلای تهران</span>
-                // <span className="text-[#FFD60A] text-xs">۱۷ عیار</span>
+                <span>سکه ربع</span>
+                // <span className="text-[#FFD60A] text-xs">۲/۰۳۳ گرم عیار ۹۰۰</span>
               </li>
               <li className="flex justify-between items-center">
-                <span>ربع سکه بهار آزادی</span>
-                // <span className="text-[#FFD60A] text-xs">۲.۰۳۳ گرم</span>
+                <span>سکه گرمی بانک مرکزی</span>
+                // <span className="text-[#FFD60A] text-xs">۱/۰۱ گرم عیار ۹۰۰</span>
               </li>
               <li className="flex justify-between items-center">
-                <span>اونس جهانی طلا</span>
-                // <span className="text-[#FFD60A] text-xs">XAU/USD</span>
+                <span>مظنه</span>
+                // <span className="text-[#FFD60A] text-xs">قیمت یک مثقال طلای ۱۷ عیار</span>
               </li>
             </ul>
           </div>
@@ -131,7 +130,7 @@ export const Footer: React.FC = () => {
                 <Phone size={18} className="text-[#FFC300] shrink-0" />
                 <div className="flex flex-col gap-0.5">
                   <a href="tel:02166834042" dir="ltr" className="tabular-nums font-mono text-slate-200 hover:text-[#FFD60A] transition-colors">021-66834042</a>
-                  <a href="tel:09121309277" dir="ltr" className="tabular-nums font-mono text-slate-200 hover:text-[#FFD60A] transition-colors">09121309277</a>
+                  <a href="tel:09001309277" dir="ltr" className="tabular-nums font-mono text-slate-200 hover:text-[#FFD60A] transition-colors">09001309277</a>
                 </div>
               </li>
               <li className="flex items-center gap-2.5">
@@ -142,7 +141,7 @@ export const Footer: React.FC = () => {
               </li>
               <li className="flex items-center gap-2.5">
                 <Clock size={18} className="text-[#FFC300] shrink-0" />
-                <span>شنبه تا چهارشنبه: ۹:۰۰ الی ۱۸:۰۰</span>
+                <span>شنبه تا پنجشنبه: ۱۱:۰۰ الی ۲۱:۰۰</span>
               </li>
             </ul>
           </div>

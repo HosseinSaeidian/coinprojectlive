@@ -53,8 +53,8 @@ export const ContactPage: React.FC = () => {
                     <a href="tel:02166834042" className="font-mono text-base font-bold text-white tracking-wider hover:text-[#FFD60A] transition-colors" dir="ltr">
                       021-66834042
                     </a>
-                    <a href="tel:09121309277" className="font-mono text-sm font-bold text-slate-200 hover:text-[#FFD60A] transition-colors" dir="ltr">
-                      09121309277
+                    <a href="tel:09001309277" className="font-mono text-sm font-bold text-slate-200 hover:text-[#FFD60A] transition-colors" dir="ltr">
+                      09001309277
                     </a>
                   </div>
                 </div>
@@ -98,8 +98,7 @@ export const ContactPage: React.FC = () => {
                 </div>
                 <div className="space-y-1">
                   <span className="text-xs text-slate-400 font-bold block">ساعات پاسخگویی و فعالیت:</span>
-                  <p className="text-xs text-slate-300">شنبه تا چهارشنبه: ۹:۰۰ الی ۱۸:۰۰</p>
-                  <p className="text-xs text-slate-300">پنج‌شنبه‌ها: ۹:۰۰ الی ۱۴:۰۰</p>
+                  <p className="text-xs text-slate-300">شنبه تا پنجشنبه: ۱۱:۰۰ الی ۲۱:۰۰</p>
                 </div>
               </div>
             </div>
