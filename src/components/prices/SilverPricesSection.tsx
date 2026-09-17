@@ -23,7 +23,6 @@ export const SilverPricesSection: React.FC<SilverPricesSectionProps> = ({ items 
           <PriceCard
             key={item.id}
             item={item}
-            highlight={item.id === 'silver-nadir-1000'}
           />
         ))}
       </div>

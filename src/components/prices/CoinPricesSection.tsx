@@ -21,7 +21,6 @@ export const CoinPricesSection: React.FC<CoinPricesSectionProps> = ({ items }) =
           <PriceCard
             key={item.id}
             item={item}
-            highlight={item.id === 'coin-emami' || item.id === 'coin-rob'}
           />
         ))}
       </div>

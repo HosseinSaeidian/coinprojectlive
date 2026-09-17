@@ -21,7 +21,6 @@ export const GoldPricesSection: React.FC<GoldPricesSectionProps> = ({ items }) =
           <PriceCard
             key={item.id}
             item={item}
-            highlight={item.id === 'gold-18k' || item.id === 'gold-mesghal'}
           />
         ))}
       </div>
