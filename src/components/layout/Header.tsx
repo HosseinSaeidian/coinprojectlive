@@ -2,12 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { Menu, Calculator, Clock, Activity } from 'lucide-react';
 import { FereshtehLogo } from '../brand/FereshtehLogo';
-import { getPersianTime, getPersianDate } from '../../utils/formatters';
+import { getPersianDate } from '../../utils/formatters';
 
 interface HeaderProps {
   onOpenCalculator: () => void;
   onOpenMobileMenu: () => void;
 }
+
+const getTehranTime = (date = new Date()): string => {
+  try {
+    return new Intl.DateTimeFormat('fa-IR', {
+      timeZone: 'Asia/Tehran',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+    }).format(date);
+  } catch {
+    return '';
+  }
+};
 
 const getHeaderPersianDate = (): string => {
   try {
@@ -33,13 +47,13 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenCalculator,
   onOpenMobileMenu,
 }) => {
-  const [time, setTime] = useState<string>(getPersianTime());
+  const [time, setTime] = useState<string>(() => getTehranTime());
   const [isScrolled, setIsScrolled] = useState<boolean>(false);
   const location = useLocation();
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTime(getPersianTime());
+      setTime(getTehranTime());
     }, 1000);
     return () => clearInterval(timer);
   }, []);
@@ -63,10 +77,25 @@ export const Header: React.FC<HeaderProps> = ({
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between gap-4">
-          {/* Brand Logo */}
-          <NavLink to="/" className="transition-transform hover:scale-[1.02]">
-            <FereshtehLogo size="md" />
-          </NavLink>
+          {/* Brand Logo & Mobile Live Tehran Clock */}
+          <div className="flex flex-col items-center">
+            <NavLink to="/" className="transition-transform hover:scale-[1.02]">
+              <FereshtehLogo size="md" />
+            </NavLink>
+
+            {/* Mobile Clock & Persian Date (Only visible on mobile md:hidden, centered under logo) */}
+            <div
+              className="flex md:hidden flex-col items-center text-center mt-1 select-none"
+              aria-label="ساعت و تاریخ رسمی ایران"
+            >
+              <div className="text-[14px] font-bold text-[#FFD60A] tabular-nums tracking-wider leading-tight">
+                {time}
+              </div>
+              <div className="text-[10px] font-medium text-slate-300 leading-tight mt-0.5">
+                {getHeaderPersianDate()}
+              </div>
+            </div>
+          </div>
 
           {/* Desktop Navigation */}
           <nav className="hidden lg:flex items-center gap-1.5 bg-[#001D3D]/60 border border-[#003566]/80 rounded-full px-4 py-1.5 backdrop-blur-sm">
