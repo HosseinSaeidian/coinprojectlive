@@ -1,23 +1,18 @@
 import React from 'react';
-import { RefreshCw, Activity, ShieldCheck } from 'lucide-react';
 import { MarketStatusData } from '../../types';
-import { formatCountdownMinutes } from '../../utils/formatters';
 import { isIranMarketOpen } from '../../services/marketService';
 
 interface MarketStatusProps {
   status: MarketStatusData | null;
   lastUpdated: string;
-  isRefreshing: boolean;
-  onRefresh: () => void;
-  secondsLeft: number;
+  isRefreshing?: boolean;
+  onRefresh?: () => void;
+  secondsLeft?: number;
 }
 
 export const MarketStatus: React.FC<MarketStatusProps> = ({
   status,
   lastUpdated,
-  isRefreshing,
-  onRefresh,
-  secondsLeft,
 }) => {
   const isOpen = status?.isOpen ?? isIranMarketOpen();
 
@@ -69,33 +64,13 @@ export const MarketStatus: React.FC<MarketStatusProps> = ({
           </div>
         </div>
 
-        {/* Refresh Timer & Manual Trigger */}
-        <div className="flex items-center gap-3 self-stretch md:self-auto justify-between md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-[#003566]/60">
+        {/* Last Update */}
+        <div className="flex items-center self-stretch md:self-auto justify-start md:justify-end border-t md:border-t-0 pt-3 md:pt-0 border-[#003566]/60">
           <div className="text-right text-xs">
             <span className="text-slate-400 block text-[11px]">آخرین بروزرسانی:</span>
             <span className="text-slate-200 font-bold tabular-nums">
               {lastUpdated}
             </span>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <span className="hidden sm:inline-block text-[11px] text-slate-400 bg-[#000814] px-2 py-1 rounded-md border border-[#003566]">
-              بروزرسانی خودکار در: <strong className="text-[#FFD60A] tabular-nums font-mono">{isOpen ? formatCountdownMinutes(secondsLeft) : formatCountdownMinutes(0)}</strong>
-            </span>
-
-            <button
-              onClick={onRefresh}
-              disabled={isRefreshing}
-              type="button"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#12366F] hover:bg-[#12366F]/80 text-[#FFD60A] border border-[#FFC300]/40 font-bold text-xs shadow-sm transition-all cursor-pointer disabled:opacity-50"
-              title="بروزرسانی دستی قیمت‌ها"
-            >
-              <RefreshCw
-                size={14}
-                className={isRefreshing ? 'animate-spin text-[#FFD60A]' : ''}
-              />
-              <span className="hidden xs:inline">بروزرسانی</span>
-            </button>
           </div>
         </div>
       </div>

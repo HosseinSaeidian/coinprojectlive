@@ -1,10 +1,9 @@
 import React from 'react';
-import { Sparkles, ArrowDown, Calculator, TrendingUp, Shield, Clock } from 'lucide-react';
+import { Sparkles, ArrowDown, Calculator, TrendingUp, Shield } from 'lucide-react';
 import { PriceItem } from '../../types';
 import {
   formatToman,
   formatPercentage,
-  formatMarketUpdateTime,
   shouldHidePublicBuyPrice,
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
@@ -147,11 +146,6 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                       </>
                     )}
                   </div>
-
-                  <div className={`mt-3 pt-3 border-t flex items-center justify-center gap-1.5 text-[11px] text-center ${coinStyles.footer}`}>
-                    <Clock size={12} className="text-slate-500 shrink-0" />
-                    <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(coinEmami.updatedAt)}</span>
-                  </div>
                 </div>
               );
             })()}
@@ -194,23 +188,16 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                             {formatToman(gold18k.sellPrice)}
                           </span>
                         </div>
-                        <div className="flex items-baseline justify-between text-xs text-slate-400">
-                          <span>قیمت خرید:</span>
-                          {shouldHidePublicBuyPrice(gold18k) ? (
-                            <span className="font-semibold text-slate-400">-</span>
-                          ) : (
+                        {!shouldHidePublicBuyPrice(gold18k) && (
+                          <div className="flex items-baseline justify-between text-xs text-slate-400">
+                            <span>قیمت خرید:</span>
                             <span className="font-semibold text-[#d90429]">
                               {formatToman(gold18k.buyPrice)}
                             </span>
-                          )}
-                        </div>
+                          </div>
+                        )}
                       </>
                     )}
-                  </div>
-
-                  <div className={`mt-3 pt-3 border-t flex items-center justify-center gap-1.5 text-[11px] text-center ${goldStyles.footer}`}>
-                    <Clock size={12} className="text-slate-500 shrink-0" />
-                    <span>آخرین به‌روزرسانی: {formatMarketUpdateTime(gold18k.updatedAt)}</span>
                   </div>
                 </div>
               );

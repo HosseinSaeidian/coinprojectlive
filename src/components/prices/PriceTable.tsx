@@ -144,13 +144,12 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                 <th className="py-4 px-6 text-left">قیمت فروش</th>
                 <th className="py-4 px-6 text-left">تغییر</th>
                 <th className="py-4 px-6 text-center">درصد تغییر</th>
-                <th className="py-4 px-6 text-center">بروزرسانی</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#003566]/40 text-sm">
               {filteredItems.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="text-center py-10 text-slate-400 text-sm">
+                  <td colSpan={5} className="text-center py-10 text-slate-400 text-sm">
                     نمادی با این عنوان یافت نشد.
                   </td>
                 </tr>
@@ -249,11 +248,6 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                           )}
                         </div>
                       </td>
-
-                      {/* Updated Time */}
-                      <td className="py-4 px-6 text-center text-xs text-slate-400 tabular-nums">
-                        {item.updatedAt || '—'}
-                      </td>
                     </tr>
                   );
                 })
@@ -337,7 +331,6 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                     تغییر:{' '}
                     {item.changeAmount !== 0 ? formatChangeAmount(item.changeAmount, item.unit) : '-'}
                   </span>
-                  <span>بروزرسانی: {item.updatedAt || '—'}</span>
                 </div>
               </div>
             );
