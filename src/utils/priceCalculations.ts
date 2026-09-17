@@ -313,18 +313,28 @@ export function getDerivedGold24kBasePrices(
 ): { apiBuyPrice: number | null; apiSellPrice: number | null } {
   const { finalBuyPrice, finalSellPrice } = getGold18kFinalPrices(rawItems, configs);
 
-  const derivedBuy =
+  const rawBuy =
     finalBuyPrice !== null && Number.isFinite(finalBuyPrice) && finalBuyPrice > 0
       ? (finalBuyPrice * purity) / 750
       : null;
 
-  const derivedSell =
+  const rawSell =
     finalSellPrice !== null && Number.isFinite(finalSellPrice) && finalSellPrice > 0
       ? (finalSellPrice * purity) / 750
       : null;
 
+  const roundedBuy =
+    rawBuy !== null && Number.isFinite(rawBuy) && rawBuy > 0
+      ? Math.ceil(rawBuy / 100000) * 100000
+      : null;
+
+  const roundedSell =
+    rawSell !== null && Number.isFinite(rawSell) && rawSell > 0
+      ? Math.ceil(rawSell / 100000) * 100000
+      : null;
+
   return {
-    apiBuyPrice: derivedBuy !== null && Number.isFinite(derivedBuy) && derivedBuy > 0 ? derivedBuy : null,
-    apiSellPrice: derivedSell !== null && Number.isFinite(derivedSell) && derivedSell > 0 ? derivedSell : null,
+    apiBuyPrice: roundedBuy !== null && Number.isFinite(roundedBuy) && roundedBuy > 0 ? roundedBuy : null,
+    apiSellPrice: roundedSell !== null && Number.isFinite(roundedSell) && roundedSell > 0 ? roundedSell : null,
   };
 }
