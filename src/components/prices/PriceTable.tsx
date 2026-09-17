@@ -161,10 +161,6 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                   const isSellAvailable =
                     item.isSellActive !== false && item.sellPrice !== null && item.sellPrice > 0;
                   const isPending = Boolean(item.isPricePending || (!isBuyAvailable && !isSellAvailable));
-                  const rowIsPendingPrice = Boolean(item.isPricePending || !isBuyAvailable || !isSellAvailable);
-                  const shouldHideImportantBadge = rowIsPendingPrice;
-                  const existingImportantCondition = Boolean(item.isHot);
-                  const shouldShowImportantBadge = existingImportantCondition && !shouldHideImportantBadge;
 
                   return (
                     <tr
@@ -173,16 +169,9 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                     >
                       {/* Name */}
                       <td className="py-4 px-6">
-                        <div className="flex items-center gap-2.5">
-                          <span className="font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
-                            {cleanSymbolTitle(item.name)}
-                          </span>
-                          {shouldShowImportantBadge && (
-                            <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
-                              مهم
-                            </span>
-                          )}
-                        </div>
+                        <span className="font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
+                          {cleanSymbolTitle(item.name)}
+                        </span>
                       </td>
 
                       {/* Buy Price */}
@@ -271,10 +260,6 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
             const isSellAvailable =
               item.isSellActive !== false && item.sellPrice !== null && item.sellPrice > 0;
             const isPending = Boolean(item.isPricePending || (!isBuyAvailable && !isSellAvailable));
-            const rowIsPendingPrice = Boolean(item.isPricePending || !isBuyAvailable || !isSellAvailable);
-            const shouldHideImportantBadge = rowIsPendingPrice;
-            const existingImportantCondition = Boolean(item.isHot);
-            const shouldShowImportantBadge = existingImportantCondition && !shouldHideImportantBadge;
 
             return (
               <div
@@ -283,14 +268,7 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
               >
                 <div className="flex items-start justify-between">
                   <div>
-                    <div className="flex items-center gap-2">
-                      <h4 className="font-bold text-white text-sm">{cleanSymbolTitle(item.name)}</h4>
-                      {shouldShowImportantBadge && (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse">
-                          مهم
-                        </span>
-                      )}
-                    </div>
+                    <h4 className="font-bold text-white text-sm">{cleanSymbolTitle(item.name)}</h4>
                   </div>
                   {isPending && item.changePercentage === 0 ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">
