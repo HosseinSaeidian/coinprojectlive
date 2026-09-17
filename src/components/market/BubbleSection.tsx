@@ -4,6 +4,7 @@ import { SectionHeader } from '../common/SectionHeader';
 import { formatToman, formatPercentage, PENDING_UPDATE_TEXT, PENDING_PRICE_TEXT } from '../../utils/formatters';
 import { Info, Clock } from 'lucide-react';
 import { TrendBadge } from '../common/Badge';
+import { ProductIcon } from '../common/ProductIcon';
 import { getMarketCardStyles } from '../../utils/marketCardStyles';
 
 interface BubbleSectionProps {
@@ -40,7 +41,15 @@ export const BubbleSection: React.FC<BubbleSectionProps> = ({ bubbles }) => {
             >
               <div>
                 <div className="flex justify-between items-start mb-3">
-                  <h4 className={`text-base font-extrabold ${bubbleStyles.title}`}>{item.name}</h4>
+                  <div className="flex items-center gap-2 min-w-0">
+                    <ProductIcon
+                      id={item.id}
+                      category="coin"
+                      name={item.name}
+                      scaleMultiplier={0.9}
+                    />
+                    <h4 className={`text-base font-extrabold ${bubbleStyles.title}`}>{item.name}</h4>
+                  </div>
                   {!isPending && (
                     <TrendBadge direction={item.direction} percentage={item.bubblePercentage} />
                   )}

@@ -8,6 +8,7 @@ import {
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
+import { ProductIcon } from '../common/ProductIcon';
 import { getMarketCardStyles } from '../../utils/marketCardStyles';
 
 interface HeroSectionProps {
@@ -110,6 +111,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <div className="relative mb-3 text-center">
                     <span className="text-xs font-bold text-[#FFD60A] block mb-1 text-center">شاخص سکه</span>
                     <div className="flex items-center justify-center gap-2 flex-wrap text-center px-8">
+                      <ProductIcon id={coinEmami.id} category={coinEmami.category} name={coinEmami.name} size={24} />
                       <h3 className={`text-xl sm:text-2xl font-black text-center tracking-tight ${coinStyles.title}`}>{coinEmami.name}</h3>
                       {coinEmami.isPricePending && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse shrink-0">
@@ -161,6 +163,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                   <div className="relative mb-3 text-center">
                     <span className="text-xs font-bold text-[#FFD60A] block mb-1 text-center">شاخص طلا</span>
                     <div className="flex items-center justify-center gap-2 flex-wrap text-center px-8">
+                      <ProductIcon id={gold18k.id} category={gold18k.category} name={gold18k.name} size={24} />
                       <h3 className={`text-xl sm:text-2xl font-black text-center tracking-tight ${goldStyles.title}`}>{gold18k.name}</h3>
                       {gold18k.isPricePending && (
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#12366F] text-[#FFD60A] border border-[#FFC300]/30 animate-pulse shrink-0">

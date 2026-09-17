@@ -10,6 +10,7 @@ import {
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
+import { ProductIcon } from '../common/ProductIcon';
 import { Search } from 'lucide-react';
 
 interface PriceTableProps {
@@ -169,9 +170,17 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                     >
                       {/* Name */}
                       <td className="py-4 px-6">
-                        <span className="font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
-                          {cleanSymbolTitle(item.name)}
-                        </span>
+                        <div className="inline-flex items-center gap-2">
+                          <ProductIcon
+                            id={item.id}
+                            category={item.category}
+                            name={item.name}
+                            scaleMultiplier={0.9}
+                          />
+                          <span className="font-extrabold text-white group-hover:text-[#FFD60A] transition-colors">
+                            {cleanSymbolTitle(item.name)}
+                          </span>
+                        </div>
                       </td>
 
                       {/* Buy Price */}
@@ -267,8 +276,14 @@ export const PriceTable: React.FC<PriceTableProps> = ({ goldItems, coinItems, si
                 className="bg-[#001D3D] border border-[#003566] rounded-xl p-4 space-y-3"
               >
                 <div className="flex items-start justify-between">
-                  <div>
-                    <h4 className="font-bold text-white text-sm">{cleanSymbolTitle(item.name)}</h4>
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <ProductIcon
+                      id={item.id}
+                      category={item.category}
+                      name={item.name}
+                      scaleMultiplier={0.85}
+                    />
+                    <h4 className="font-bold text-white text-sm truncate">{cleanSymbolTitle(item.name)}</h4>
                   </div>
                   {isPending && item.changePercentage === 0 ? (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-300 border border-amber-500/30">

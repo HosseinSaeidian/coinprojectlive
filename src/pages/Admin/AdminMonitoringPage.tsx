@@ -13,6 +13,7 @@ import {
 } from '../../utils/formatters';
 import { FereshtehLogo } from '../../components/brand/FereshtehLogo';
 import { TrendBadge } from '../../components/common/Badge';
+import { ProductIcon } from '../../components/common/ProductIcon';
 import {
   Clock,
   Maximize2,
@@ -315,15 +316,24 @@ export const AdminMonitoringPage: React.FC = () => {
         {/* Card Header: Product Name + Subtitle + Trend Badge */}
         <div className="relative z-10 mb-1 lg:mb-0.5 xl:mb-1">
           <div className="flex items-start justify-between gap-1.5 sm:gap-2">
-            <div className="flex-1 min-w-0">
-              <h2 className="text-sm sm:text-base lg:text-sm xl:text-base 2xl:text-lg font-black text-white tracking-tight leading-tight truncate">
-                {item.name}
-              </h2>
-              {subtitle && (
-                <span className="text-[10px] sm:text-[11px] xl:text-xs font-semibold text-slate-400 block truncate mt-0.5">
-                  {subtitle}
-                </span>
-              )}
+            <div className="flex items-start gap-1.5 sm:gap-2 flex-1 min-w-0">
+              <ProductIcon
+                id={item.id}
+                category={item.category}
+                name={item.name}
+                scaleMultiplier={0.88}
+                className="mt-0.5"
+              />
+              <div className="min-w-0 flex-1">
+                <h2 className="text-sm sm:text-base lg:text-sm xl:text-base 2xl:text-lg font-black text-white tracking-tight leading-tight truncate">
+                  {item.name}
+                </h2>
+                {subtitle && (
+                  <span className="text-[10px] sm:text-[11px] xl:text-xs font-semibold text-slate-400 block truncate mt-0.5">
+                    {subtitle}
+                  </span>
+                )}
+              </div>
             </div>
 
             {!isPending && item.direction && item.direction !== 'neutral' && (

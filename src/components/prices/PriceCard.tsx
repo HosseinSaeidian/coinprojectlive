@@ -9,6 +9,7 @@ import {
   PENDING_UPDATE_TEXT,
 } from '../../utils/formatters';
 import { TrendBadge } from '../common/Badge';
+import { ProductIcon } from '../common/ProductIcon';
 import { Clock } from 'lucide-react';
 import { getMarketCardStyles } from '../../utils/marketCardStyles';
 
@@ -35,6 +36,11 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
       {/* Header */}
       <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 min-h-[36px]">
         <div className="flex items-center gap-2 min-w-0">
+          <ProductIcon
+            id={item.id}
+            category={item.category}
+            name={item.name}
+          />
           <h4 className={`text-lg sm:text-xl font-black text-right tracking-tight leading-snug ${cardStyles.title}`}>
             {item.name}
           </h4>
