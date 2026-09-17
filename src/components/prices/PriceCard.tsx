@@ -33,9 +33,9 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
       className={`relative rounded-2xl p-5 border group ${cardStyles.container}`}
     >
       {/* Header */}
-      <div className="relative mb-3 flex items-center justify-center min-h-[32px]">
-        <div className="flex items-center justify-center gap-2 flex-wrap text-center px-8 w-full">
-          <h4 className={`text-lg sm:text-xl font-black text-center tracking-tight leading-snug ${cardStyles.title}`}>
+      <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-5 min-h-[36px]">
+        <div className="flex items-center gap-2 min-w-0">
+          <h4 className={`text-lg sm:text-xl font-black text-right tracking-tight leading-snug ${cardStyles.title}`}>
             {item.name}
           </h4>
           {isOverallPending && (
@@ -45,14 +45,14 @@ export const PriceCard: React.FC<PriceCardProps> = ({ item, highlight = false })
           )}
         </div>
         {!isOverallPending && (
-          <div className="absolute left-0 top-0.5 shrink-0">
+          <div className="shrink-0">
             <TrendBadge direction={item.direction} percentage={item.changePercentage} />
           </div>
         )}
       </div>
 
       {/* Sell / Buy Prices */}
-      <div className={`space-y-2.5 mt-3 rounded-xl p-3 border ${cardStyles.innerBox}`}>
+      <div className={`space-y-2.5 rounded-xl p-3 border ${cardStyles.innerBox}`}>
         {isOverallPending && !isBuyAvailable && !isSellAvailable ? (
           <div className="py-2.5 text-center space-y-1.5">
             <span className="text-xs text-amber-300/80 block font-medium">نرخ لحظه‌ای معامله:</span>
