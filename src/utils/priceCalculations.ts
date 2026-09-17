@@ -254,3 +254,77 @@ export function getDerivedGold18kBasePrices(
     apiSellPrice: derivedSell !== null && Number.isFinite(derivedSell) && derivedSell > 0 ? derivedSell : null,
   };
 }
+
+export const GOLD_24K_999_PURITY = 999.9;
+export const GOLD_24K_995_PURITY = 995.9;
+
+/**
+ * Resolves the final/effective buy and sell prices of gold-18k.
+ *
+ * Rules:
+ * - Source is the derived gold-18k base (from coin-naqd-farda) plus gold-18k's own configuration:
+ *     In API mode: derived gold-18k API base + gold-18k buyAdjustment/sellAdjustment
+ *     In Manual mode: gold-18k manualBuyPrice / manualSellPrice
+ * - Uses the project's existing calculateEffectiveProductPrice logic
+ * - If final price on a side is null, undefined, NaN, Infinity, or <= 0, returns null for that side
+ */
+export function getGold18kFinalPrices(
+  rawItems: any[] = [],
+  configs: Record<string, Partial<ProductServerConfig>> = {}
+): { finalBuyPrice: number | null; finalSellPrice: number | null } {
+  const derivedGold18kBase = getDerivedGold18kBasePrices(rawItems, configs);
+  const gold18kConfig = (configs || {})['gold-18k'];
+
+  const { buyPrice, sellPrice } = calculateEffectiveProductPrice(
+    derivedGold18kBase.apiBuyPrice,
+    derivedGold18kBase.apiSellPrice,
+    gold18kConfig
+  );
+
+  return {
+    finalBuyPrice: buyPrice !== null && Number.isFinite(buyPrice) && buyPrice > 0 ? buyPrice : null,
+    finalSellPrice: sellPrice !== null && Number.isFinite(sellPrice) && sellPrice > 0 ? sellPrice : null,
+  };
+}
+
+/**
+ * Calculates the derived API base prices for 24K gold based on the final/effective
+ * prices of gold-18k and target purity (999.9 for 24k-999, or 995.9 for 24k-995).
+ *
+ * Formula:
+ * derivedGold24kBuy  = (finalGold18kBuy * purity) / 750
+ * derivedGold24kSell = (finalGold18kSell * purity) / 750
+ *
+ * Rules:
+ * - Source is the FINAL/EFFECTIVE price of gold-18k (API mode with adjustments OR manual mode).
+ * - Target purity uses decimal constants 999.9 or 995.9.
+ * - This produces the API BASE / COMPUTED API values of the 24k product (not its final price).
+ * - The 24k product keeps its own independent configuration:
+ *     finalPrice = apiBasePrice + ownAdjustment (in API mode) or manualPrice (in manual mode)
+ * - If final gold-18k price on a side is null, undefined, NaN, Infinity, or <= 0:
+ *     derived 24k base for that side remains null (never falls back to raw upstream gold-24k API price).
+ * - Never produces NaN, Infinity, zero, or a negative derived price.
+ * - No custom or arbitrary rounding is introduced; maintains standard exact formula.
+ */
+export function getDerivedGold24kBasePrices(
+  rawItems: any[] = [],
+  configs: Record<string, Partial<ProductServerConfig>> = {},
+  purity: number = GOLD_24K_999_PURITY
+): { apiBuyPrice: number | null; apiSellPrice: number | null } {
+  const { finalBuyPrice, finalSellPrice } = getGold18kFinalPrices(rawItems, configs);
+
+  const derivedBuy =
+    finalBuyPrice !== null && Number.isFinite(finalBuyPrice) && finalBuyPrice > 0
+      ? (finalBuyPrice * purity) / 750
+      : null;
+
+  const derivedSell =
+    finalSellPrice !== null && Number.isFinite(finalSellPrice) && finalSellPrice > 0
+      ? (finalSellPrice * purity) / 750
+      : null;
+
+  return {
+    apiBuyPrice: derivedBuy !== null && Number.isFinite(derivedBuy) && derivedBuy > 0 ? derivedBuy : null,
+    apiSellPrice: derivedSell !== null && Number.isFinite(derivedSell) && derivedSell > 0 ? derivedSell : null,
+  };
+}

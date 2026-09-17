@@ -34,13 +34,23 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
   {
     id: 'gold-24k',
     name: 'طلای ۲۴ عیار',
-    displayName: 'طلای ۲۴ عیار',
+    displayName: 'طلای ۲۴ عیار ۹۹۹',
     category: 'gold',
     unit: 'تومان',
-    purity: '۹۹۹/۱۰۰۰',
+    purity: '۹۹۹.۹/۱۰۰۰',
     weight: '۱ گرم',
     matchTitles: ['طلای ۲۴ عیار', 'طلا 24 عیار', 'طلای 24 عیار', '24k'],
     sortOrder: 2,
+  },
+  {
+    id: 'gold-24k-995',
+    name: 'طلای ۲۴ عیار ۹۹۵',
+    displayName: 'طلای ۲۴ عیار ۹۹۵',
+    category: 'gold',
+    unit: 'تومان',
+    purity: '۹۹۵.۹/۱۰۰۰',
+    weight: '۱ گرم',
+    sortOrder: 3,
   },
   {
     id: 'gold-mesghal',
@@ -51,7 +61,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     purity: '۷۰۵/۱۰۰۰ (۱۷ عیار)',
     weight: '۴.۶۰۸ گرم',
     matchTitles: ['مثقال طلا', 'مظنه', 'مثقال طلا (مظنه)'],
-    sortOrder: 3,
+    sortOrder: 4,
   },
   {
     id: 'gold-abshodeh',
@@ -61,7 +71,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     unit: 'تومان',
     purity: 'شمش/آبشده استاندارد',
     matchTitles: ['طلای آبشده نقدی', 'آبشده نقدی', 'آبشده'],
-    sortOrder: 4,
+    sortOrder: 5,
   },
   {
     id: 'gold-18k-750',
@@ -71,7 +81,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     unit: 'تومان',
     purity: '۷۵۰ استاندارد',
     matchTitles: ['طلای ۱۸ عیار / ۷۵۰', 'طلا 750', '۱۸ عیار ۷۵۰'],
-    sortOrder: 5,
+    sortOrder: 6,
   },
   {
     id: 'gold-18k-740',
@@ -81,7 +91,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     unit: 'تومان',
     purity: '۷۴۰ کارگاهی',
     matchTitles: ['طلای ۱۸ عیار / ۷۴۰', 'طلا 740', '۱۸ عیار ۷۴۰'],
-    sortOrder: 6,
+    sortOrder: 7,
   },
   {
     id: 'gold-used',
@@ -91,7 +101,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     unit: 'تومان',
     purity: '۷۵۰ مستعمل',
     matchTitles: ['طلای دست دوم (بدون اجرت)', 'دست دوم', 'طلای مستعمل'],
-    sortOrder: 7,
+    sortOrder: 8,
   },
   {
     id: 'gold-ounce',
@@ -101,7 +111,7 @@ export const PRODUCT_CATALOG: CatalogProductDefinition[] = [
     unit: 'دلار',
     weight: '۳۱.۱۰۳ گرم (۲۴ عیار)',
     matchTitles: ['اونس جهانی طلا', 'اونس جهانی', 'اونس طلا', 'XAU/USD'],
-    sortOrder: 8,
+    sortOrder: 9,
   },
 
   // ================= COIN & PRECIOUS METAL CATEGORY =================

@@ -12,7 +12,14 @@ import {
 import { priceService } from './priceService';
 import { isIranMarketOpen } from './marketService';
 import { PRODUCT_CATALOG, findMatchingApiItem, parseApiPrice } from './productCatalog';
-import { calculateEffectiveProductPrice, getDerivedGoldMesghalBasePrices, getDerivedGold18kBasePrices } from '../utils/priceCalculations';
+import {
+  calculateEffectiveProductPrice,
+  getDerivedGoldMesghalBasePrices,
+  getDerivedGold18kBasePrices,
+  getDerivedGold24kBasePrices,
+  GOLD_24K_999_PURITY,
+  GOLD_24K_995_PURITY,
+} from '../utils/priceCalculations';
 import { getCurrentCycleTimeFormatted } from '../utils/formatters';
 
 export const ADMIN_AUTH_KEY = 'fereshteh_admin_auth';
@@ -125,9 +132,11 @@ export const adminService = {
     const now = new Date();
     const cycleStartTimeFormatted = getCurrentCycleTimeFormatted(now);
 
-    // Derive API base prices for gold-mesghal and gold-18k from coin-naqd-farda's effective prices
+    // Derive API base prices for gold-mesghal, gold-18k, gold-24k, and gold-24k-995 from effective formulas
     const derivedMesghalBase = getDerivedGoldMesghalBasePrices(rawItems, configs);
     const derivedGold18kBase = getDerivedGold18kBasePrices(rawItems, configs);
+    const derivedGold24k999Base = getDerivedGold24kBasePrices(rawItems, configs, GOLD_24K_999_PURITY);
+    const derivedGold24k995Base = getDerivedGold24kBasePrices(rawItems, configs, GOLD_24K_995_PURITY);
 
     const processedApiIds = new Set<string>();
     const managedList: ManagedProductItem[] = [];
@@ -156,6 +165,16 @@ export const adminService = {
         // If coin-naqd-farda is unavailable, base remains null. Never falls back to upstream gold-18k price.
         apiBuyPrice = derivedGold18kBase.apiBuyPrice;
         apiSellPrice = derivedGold18kBase.apiSellPrice;
+      } else if (p.id === 'gold-24k') {
+        // RULE: gold-24k (999) API base derives from gold-18k's final/effective prices * 999.9 / 750.
+        // If gold-18k is unavailable, base remains null. Never falls back to upstream gold-24k price.
+        apiBuyPrice = derivedGold24k999Base.apiBuyPrice;
+        apiSellPrice = derivedGold24k999Base.apiSellPrice;
+      } else if (p.id === 'gold-24k-995') {
+        // RULE: gold-24k-995 API base derives from gold-18k's final/effective prices * 995.9 / 750.
+        // If gold-18k is unavailable, base remains null. Never falls back to upstream price.
+        apiBuyPrice = derivedGold24k995Base.apiBuyPrice;
+        apiSellPrice = derivedGold24k995Base.apiSellPrice;
       }
 
       const config: ProductServerConfig | undefined = configs[p.id];
