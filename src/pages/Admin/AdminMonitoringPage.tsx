@@ -272,6 +272,24 @@ export const AdminMonitoringPage: React.FC = () => {
     items.find((item) => item.id === id)
   ).filter(Boolean) as PriceItem[];
 
+  // Presentation grouping for the 3 clear visual sections requested:
+  // Section 1: سکه‌های بانکی (coin-emami, coin-bahar-azadi, coin-nim, coin-rob, coin-gerami)
+  const BANK_COIN_IDS = ['coin-emami', 'coin-bahar-azadi', 'coin-nim', 'coin-rob', 'coin-gerami'] as const;
+  const bankCoinItems = BANK_COIN_IDS.map((id) =>
+    items.find((item) => item.id === id)
+  ).filter(Boolean) as PriceItem[];
+
+  // Section 2: طلا و مظنه (gold-18k, gold-mesghal)
+  const GOLD_BENCHMARK_IDS = ['gold-18k', 'gold-mesghal'] as const;
+  const goldBenchmarkItems = GOLD_BENCHMARK_IDS.map((id) =>
+    items.find((item) => item.id === id)
+  ).filter(Boolean) as PriceItem[];
+
+  // Section 3: نقره (silver-nadir-1000, silver-emarati-1000)
+  const silverItems = MONITORING_ROW3_IDS.map((id) =>
+    items.find((item) => item.id === id)
+  ).filter(Boolean) as PriceItem[];
+
   const renderProductCard = (item: PriceItem) => {
     const isPending = Boolean(
       item.isPricePending || (!item.buyPrice && !item.sellPrice)
@@ -505,34 +523,70 @@ export const AdminMonitoringPage: React.FC = () => {
             </button>
           </div>
         ) : (
-          <div className="w-full flex flex-col justify-center gap-2 sm:gap-2.5 lg:gap-2 xl:gap-2.5 2xl:gap-3 my-auto">
-            {/* ROW 1: 4 Cards (coin-emami, coin-bahar-azadi, coin-nim, coin-rob) */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-2.5 lg:gap-2 xl:gap-2.5 2xl:gap-3">
-              {row1Items.map(renderProductCard)}
+          <div className="w-full flex flex-col justify-center gap-1.5 lg:gap-1 xl:gap-2 2xl:gap-2.5 my-auto">
+            {/* SECTION 1 (ROW 1): سکه‌های بانکی (5 Cards: coin-emami, coin-bahar-azadi, coin-nim, coin-rob, coin-gerami) */}
+            <div className="relative rounded-2xl bg-[#00142d]/60 border border-[#003566]/70 px-2 sm:px-3 lg:px-2 xl:px-2.5 2xl:px-3 pt-1.5 pb-1.5 lg:pt-1 lg:pb-1 xl:pt-1.5 xl:pb-2 shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+              {/* Integrated Section Title Pill */}
+              <div className="flex items-center gap-2 mb-1 lg:mb-0.5 xl:mb-1">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#002855]/90 border border-[#FFC300]/40 text-[#FFD60A] text-[10px] sm:text-[11px] xl:text-xs font-black shadow-sm select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFD60A] animate-pulse" />
+                  <span>سکه‌های بانکی</span>
+                </span>
+                <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#003566]/60 to-[#003566]/20" />
+              </div>
+
+              {/* 5 Bank Coins Grid: 5 columns on desktop */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-1.5 sm:gap-2 lg:gap-1.5 xl:gap-2 2xl:gap-2.5">
+                {bankCoinItems.map(renderProductCard)}
+              </div>
             </div>
 
-            {/* ROW 2: 3 Cards Centered (coin-gerami, gold-18k, gold-mesghal) */}
-            <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap justify-center gap-2 sm:gap-2.5 lg:gap-2 xl:gap-2.5 2xl:gap-3 w-full">
-              {row2Items.map((item) => (
-                <div
-                  key={item.id}
-                  className="w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(25%-0.375rem)] xl:w-[calc(25%-0.46875rem)] 2xl:w-[calc(25%-0.5625rem)]"
-                >
-                  {renderProductCard(item)}
-                </div>
-              ))}
+            {/* SECTION 2 (ROW 2): طلا و مظنه (2 Cards: gold-18k, gold-mesghal) - Standalone Row, Centered */}
+            <div className="relative rounded-2xl bg-[#00142d]/60 border border-[#003566]/70 px-2 sm:px-3 lg:px-2 xl:px-2.5 2xl:px-3 pt-1.5 pb-1.5 lg:pt-1 lg:pb-1 xl:pt-1.5 xl:pb-2 shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+              {/* Integrated Section Title Pill */}
+              <div className="flex items-center gap-2 mb-1 lg:mb-0.5 xl:mb-1">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#002855]/90 border border-[#FFC300]/40 text-[#FFD60A] text-[10px] sm:text-[11px] xl:text-xs font-black shadow-sm select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#FFD60A]" />
+                  <span>طلا و مظنه</span>
+                </span>
+                <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#003566]/60 to-[#003566]/20" />
+              </div>
+
+              {/* 2 Gold Benchmark Cards - Centered */}
+              <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap justify-center gap-1.5 sm:gap-2 lg:gap-1.5 xl:gap-2 2xl:gap-2.5 w-full">
+                {goldBenchmarkItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.5rem)] xl:w-[calc(26%-0.5rem)] 2xl:w-[calc(24%-0.5rem)]"
+                  >
+                    {renderProductCard(item)}
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* ROW 3: 2 Cards Centered (silver-nadir-1000, silver-emarati-1000) */}
-            <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap justify-center gap-2 sm:gap-2.5 lg:gap-2 xl:gap-2.5 2xl:gap-3 w-full">
-              {row3Items.map((item) => (
-                <div
-                  key={item.id}
-                  className="w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(25%-0.375rem)] xl:w-[calc(25%-0.46875rem)] 2xl:w-[calc(25%-0.5625rem)]"
-                >
-                  {renderProductCard(item)}
-                </div>
-              ))}
+            {/* SECTION 3 (ROW 3): نقره (2 Cards: silver-nadir-1000, silver-emarati-1000) - Standalone Row, Centered */}
+            <div className="relative rounded-2xl bg-[#00142d]/60 border border-[#003566]/70 px-2 sm:px-3 lg:px-2 xl:px-2.5 2xl:px-3 pt-1.5 pb-1.5 lg:pt-1 lg:pb-1 xl:pt-1.5 xl:pb-2 shadow-[0_4px_24px_rgba(0,0,0,0.35)] backdrop-blur-sm">
+              {/* Integrated Section Title Pill */}
+              <div className="flex items-center gap-2 mb-1 lg:mb-0.5 xl:mb-1">
+                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#002855]/90 border border-slate-400/40 text-slate-200 text-[10px] sm:text-[11px] xl:text-xs font-black shadow-sm select-none">
+                  <span className="w-1.5 h-1.5 rounded-full bg-slate-300" />
+                  <span>نقره</span>
+                </span>
+                <div className="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#003566]/60 to-[#003566]/20" />
+              </div>
+
+              {/* 2 Silver Cards - Centered */}
+              <div className="flex flex-col sm:flex-row flex-wrap lg:flex-nowrap justify-center gap-1.5 sm:gap-2 lg:gap-1.5 xl:gap-2 2xl:gap-2.5 w-full">
+                {silverItems.map((item) => (
+                  <div
+                    key={item.id}
+                    className="w-full sm:w-[calc(50%-0.5rem)] lg:w-[calc(30%-0.5rem)] xl:w-[calc(26%-0.5rem)] 2xl:w-[calc(24%-0.5rem)]"
+                  >
+                    {renderProductCard(item)}
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
