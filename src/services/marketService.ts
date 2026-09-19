@@ -29,7 +29,7 @@ export function isIranMarketOpen(date = new Date()): boolean {
     const totalSeconds = normalizedHour * 3600 + minute * 60 + second;
 
     const OPEN_SECONDS = 10 * 3600 + 30 * 60; // 10:30:00 -> 37800
-    const CLOSE_SECONDS = 21 * 3600;           // 21:00:00 -> 75600
+    const CLOSE_SECONDS = 23 * 3600;           // 21:00:00 -> 75600
 
     return totalSeconds >= OPEN_SECONDS && totalSeconds < CLOSE_SECONDS;
     //return totalSeconds >= OPEN_SECONDS || totalSeconds < CLOSE_SECONDS;
