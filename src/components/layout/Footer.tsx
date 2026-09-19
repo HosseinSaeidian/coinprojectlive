@@ -25,7 +25,7 @@ export const Footer: React.FC = () => {
           <div className="space-y-4 lg:col-span-1">
             <FereshtehLogo size="lg" />
             <p className="text-sm text-slate-400 leading-relaxed pt-2">
-              سامانه جامع «فرشته سکه»، مرجع معتبر و تخصصی استعلام لحظه‌ای نرخ طلا، انواع مسکوکات بهار آزادی، مظنه مثقال و حباب قیمت در بازار ایران با شفافیت و دقت کامل.
+              سامانه جامع «فرشته کوین»، مرجع معتبر و تخصصی استعلام لحظه‌ای نرخ طلا، انواع مسکوکات بهار آزادی، مظنه مثقال و حباب قیمت در بازار ایران با شفافیت و دقت کامل.
             </p>
             <div className="flex items-center gap-3 pt-2">
               <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[#001D3D] border border-[#003566] text-xs text-[#FFD60A]">
