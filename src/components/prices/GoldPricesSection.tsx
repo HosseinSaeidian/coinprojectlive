@@ -12,7 +12,7 @@ export const GoldPricesSection: React.FC<GoldPricesSectionProps> = ({ items }) =
     <section className="py-8 scroll-mt-24" id="gold-section">
       <SectionHeader
         title="قیمت طلا"
-        subtitle="نرخ لحظه‌ای طلای ۱۸ و ۲۴ عیار ، مظنه بازار تهران ، اونس جهانی طلا وتبدیل آن به گرم 18"
+        subtitle="نرخ لحظه‌ای طلای ۱۸ و ۲۴ عیار ، مظنه بازار تهران ، اونس جهانی طلا و تبدیل آن به گرم 18"
         badge="بروزرسانی زنده"
       />
 
